@@ -1,7 +1,7 @@
 # Arranca todo en orden: Ollama -> esperar listo -> servidor Paper (main) -> esperar "Done" -> bot Mindcraft.
 # Guarda los PIDs en run\pids.json para que stop_all.ps1 pueda pararlo todo limpiamente.
 param(
-    [switch]$SoloServidor,  # si se pasa, no lanza el bot (util para pruebas manuales del servidor)
+    [Alias('ServerOnly')][switch]$SoloServidor,  # si se pasa, no lanza el bot (util para pruebas manuales del servidor)
     [switch]$Test  # si se pasa, arranca server\world_test (puerto 25566) en vez de server\main, y apunta el bot ahi (Fase 2)
 )
 

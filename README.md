@@ -2,9 +2,7 @@
 
 # FelixIAMinecraft
 
-**A local AI companion that plays Minecraft with you, fully offline on your own PC.**
-
-Claude joins your world as a real player. It chats, follows you, mines, crafts, builds and sets its own small goals. A local LLM ([Andy-4](https://ollama.com/sweaterdog/andy-4)) runs it, so there are no API keys, no cloud and no subscription.
+<img src="docs/dashboard.png" alt="FelixIAMinecraft dashboard: bot health, goal, LLM speed, live thoughts and resource usage" width="100%">
 
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows&logoColor=white)](#requirements)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.6-62B47A?logo=minecraft&logoColor=white)](#how-it-works)
@@ -12,15 +10,29 @@ Claude joins your world as a real player. It chats, follows you, mines, crafts, 
 [![Node](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[Features](#features) · [Quick start](#quick-start) · [Dashboard](#the-dashboard) · [How it works](#how-it-works) · [Configuration](#configuration) · [Troubleshooting](#troubleshooting)
-
-<img src="docs/dashboard.png" alt="FelixIAMinecraft dashboard: bot health, goal, LLM speed, live thoughts and resource usage" width="100%">
-
-<sub>The live dashboard at <code>http://127.0.0.1:8090</code> shows what the bot sees, thinks and plans, and how hard your PC is working.</sub>
+**A local AI companion that plays Minecraft with you, fully offline on your own PC.**
 
 </div>
 
----
+Claude joins your world as a real player. It chats, follows you, mines, crafts, builds and sets its own small goals. A local LLM ([Andy-4](https://ollama.com/sweaterdog/andy-4)) runs it, so there are no API keys, no cloud and no subscription. One PowerShell command downloads everything into the project folder, and a live dashboard at `http://127.0.0.1:8090` shows what the bot sees, thinks and plans, and how hard your PC is working.
+
+## Table of contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Install](#install)
+- [Usage](#usage)
+- [The dashboard](#the-dashboard)
+- [How it works](#how-it-works)
+- [Configuration](#configuration)
+- [Project layout](#project-layout)
+- [Scripts](#scripts)
+- [Troubleshooting](#troubleshooting)
+- [Uninstall](#uninstall)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Credits](#credits)
+- [License](#license)
 
 ## Features
 
@@ -29,7 +41,7 @@ Claude joins your world as a real player. It chats, follows you, mines, crafts, 
 - 💬 **Talk to it in chat.** Ask it to follow you, gather wood, craft a boat or build a house. It also gets curious and sets its own goals when idle.
 - 📊 **Apple-style live dashboard.** Health, hunger, current goal, a live chat-bubble view of its thoughts, tokens/s, and CPU/GPU/VRAM/RAM per process. It also has one-click start and stop.
 - 📦 **Fully portable, one-command install.** Node.js, Java 21, Ollama, Paper, plugins and mods all download into the project folder and are checked against SHA-256/512 hashes. Nothing touches your PATH, registry or `.minecraft`.
-- 🛡️ **Safe by default.** The server listens only on `127.0.0.1` behind a whitelist. RCON passwords are random per install. The bot can't attack players and can't run arbitrary code.
+- 🛡️ **Safe by default.** The server listens only on `127.0.0.1` behind a whitelist. RCON passwords are random per install. The bot can't attack players and can't run arbitrary code. The dashboard rejects requests from other websites.
 - ⚡ **Tuned client.** A ready-made [Prism Launcher](https://prismlauncher.org) instance comes with Sodium, Lithium, FerriteCore, ImmediatelyFast, EntityCulling and Voxy for far render distance.
 - 🎨 **Custom skin** for the bot through SkinsRestorer, applied automatically on install.
 
@@ -42,31 +54,22 @@ Claude joins your world as a real player. It chats, follows you, mines, crafts, 
 | RAM | 16 GB | 32 GB |
 | Disk | ~15 GB free | |
 | Minecraft | Java Edition **1.21.6** ([Prism Launcher](https://prismlauncher.org) recommended) | |
+| Tools | [Git](https://git-scm.com) to clone (or download the ZIP from GitHub) | |
 
 > [!NOTE]
 > The model takes about 5.5 GB of VRAM and the Minecraft client needs the rest, so 8 GB is tight and 12 GB is comfortable. Without a GPU it still runs on the CPU, but replies take tens of seconds.
 
-## Quick start
+## Install
 
 ```powershell
-# 1. Get the code
 git clone https://github.com/Muurrcc/FelixIAMinecraft.git
 cd FelixIAMinecraft
 
-# 2. Install everything into this folder (≈7 GB of downloads, 10-20 min)
+# Downloads everything into this folder (about 7 GB, 10-20 min)
 powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Player YourMinecraftName -DeployPrism
-
-# 3. Start Ollama + server + bot + dashboard
-powershell -ExecutionPolicy Bypass -File scripts\start_all.ps1
 ```
 
-Then open Minecraft 1.21.6 (the **IAMine** instance in Prism), join **`127.0.0.1`**, and say hi to Claude in chat.
-
-To stop everything cleanly (saves the world and frees the VRAM):
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\stop_all.ps1
-```
+`-Player` must be your exact Minecraft username, because it goes on the server whitelist.
 
 <details>
 <summary><b>Installer options</b></summary>
@@ -81,23 +84,54 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_all.ps1
 | `-SkipSkin` | Skips the first server boot that gives the bot its skin. |
 | `-WithTestServer` | Also sets up a flat test world on port 25566 and the scripted tester bot. |
 
-You can run the installer again at any time. It skips whatever is already in place and never overwrites your `server.properties` or whitelist.
 </details>
+
+### Updating
+
+Run `git pull`, then run the installer again with the same flags. It skips whatever is already in place and never overwrites your `server.properties` or whitelist.
+
+## Usage
+
+Start Ollama, the server, the bot and the dashboard:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start_all.ps1
+```
+
+Open Minecraft 1.21.6 (the **IAMine** instance in Prism), join **`127.0.0.1`**, and talk to Claude in chat:
+
+```text
+hi Claude, follow me
+can you get 10 oak logs?
+craft a boat and meet me at the river
+stop
+```
+
+The bot answers in Spanish by default. To change that, see [Configuration](#configuration).
+
+To stop everything cleanly (saves the world and frees the VRAM):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\stop_all.ps1
+```
 
 ## The dashboard
 
-`scripts\start_all.ps1` opens it automatically. You can also run `scripts\dashboard.ps1` on its own and start or stop the server and bot from its buttons.
+`start_all.ps1` opens it automatically at `http://127.0.0.1:8090`. You can also run `scripts\dashboard.ps1` on its own and start or stop the server and bot from its buttons.
 
 | Card | Shows |
 |---|---|
-| **Estado** | Health and hunger rings, current action, position, biome, time and weather, what's nearby, held item |
-| **Objetivo** | The goal the bot is pursuing and its active behaviour modes |
-| **Velocidad del cerebro** | Generation and prompt tokens/s, response latency, a sparkline of recent LLM calls |
-| **Pensamientos** | The bot's conversation and reasoning as chat bubbles, with a box to message it directly |
-| **Consumos** | CPU, GPU, VRAM and RAM, split by Minecraft, server, bot, Ollama and the panel itself |
-| **Memoria · Inventario · Registro** | Long-term memory, inventory, recent reflexes, server log |
+| **Status** | Health and hunger rings, current action, position, biome, time and weather, what's nearby, held item |
+| **Goal** | The goal the bot is pursuing and its active behaviour modes |
+| **Brain speed** | Generation and prompt tokens/s, response latency, a sparkline of recent LLM calls |
+| **Thoughts** | The bot's conversation and reasoning as chat bubbles, with a box to message it directly |
+| **Resources** | CPU, GPU, VRAM and RAM, split by Minecraft, server, bot, Ollama and the panel itself |
+| **Memory · Inventory · Log** | Long-term memory, inventory, recent reflexes, server log |
 
-The dashboard follows Apple's Human Interface ideas on the web: a translucent sticky header, press feedback, and animations that only use transform and opacity. It respects `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast`, and it adapts down to phone width. It's a single HTML file with no build step and no dependencies. The UI text is currently in Spanish.
+The dashboard follows Apple's Human Interface ideas on the web: a translucent sticky header, press feedback, and animations that only use transform and opacity. It respects `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast`, and it adapts down to phone width. It's a single HTML file with no build step and no dependencies.
+
+> [!NOTE]
+> The dashboard's labels are in Spanish for now. An English UI is on the [roadmap](#roadmap).
 
 ## How it works
 
@@ -133,9 +167,11 @@ This repo vendors [Mindcraft](https://github.com/mindcraft-bots/mindcraft) (MIT)
 | File | Purpose |
 |---|---|
 | [`config/llm.json`](config/llm.json) | **Where the LLM runs and which model it uses.** It's applied to the bot profile on every start. |
-| [`mindcraft/settings.js`](mindcraft/settings.js) | Bot behaviour, such as `language` (default `"Spanish"`; set `"English"` or any other language), blocked actions and chat settings. |
+| [`mindcraft/settings.js`](mindcraft/settings.js) | Bot behaviour: the chat `language`, blocked actions and chat settings. |
 | [`mindcraft/profiles/claude_bot.json`](mindcraft/profiles/claude_bot.json) | The bot's name, personality and prompts. |
 | `server/main/server.properties` | Generated from [`server-template/`](server-template) on install: view distance, difficulty and similar settings. |
+
+**Make the bot speak English.** Set `"language": "English"` in `mindcraft/settings.js` (the default is `"Spanish"`) and restart the bot. The internal prompts are already in English.
 
 **Use a different model.** Change `chat_model` in `config/llm.json` (for example `ollama/sweaterdog/andy-4:q5_k_m`), pull it with `runtime\ollama\ollama.exe pull <model>`, then restart the bot.
 
@@ -157,16 +193,20 @@ FelixIAMinecraft/
 runtime/  models/  cache/  server/  logs/  run/  backups/
 ```
 
-## Useful scripts
+## Scripts
 
-| Script | |
+All scripts live in `scripts\` and run with `powershell -ExecutionPolicy Bypass -File scripts\<name>.ps1`.
+
+| Script | What it does |
 |---|---|
-| `scripts\start_all.ps1` | Starts Ollama, then Paper (waits for "Done"), then the bot, then the dashboard. `-SoloServidor` starts only the server. |
-| `scripts\stop_all.ps1` | Stops the server over RCON (the world is saved), then stops the bot and Ollama, and cleans up leftover processes. |
-| `scripts\status.ps1` | Shows which parts are running, open ports, loaded models and free disk space. |
-| `scripts\backup.ps1` | Zips the world into `backups/` and keeps the latest 10. |
-| `scripts\bench_llm.ps1` | Measures tokens/s and latency of the configured model. |
-| `scripts\run_fase2_tests.ps1` | Runs the scripted tester bot against a fresh flat test world. Needs `-WithTestServer` at install. |
+| `install.ps1` | Downloads and sets up everything. See [Install](#install). |
+| `start_all.ps1` | Starts Ollama, then Paper (waits for "Done"), then the bot, then the dashboard. `-ServerOnly` starts only the server. |
+| `stop_all.ps1` | Stops the server over RCON (the world is saved), then stops the bot and Ollama, and cleans up leftover processes. |
+| `status.ps1` | Shows which parts are running, open ports, loaded models and free disk space. |
+| `dashboard.ps1` | Starts only the dashboard. |
+| `backup.ps1` | Zips the world into `backups/` and keeps the latest 10. |
+| `bench_llm.ps1` | Measures tokens/s and latency of the configured model. |
+| `run_fase2_tests.ps1` | Runs the scripted tester bot against a fresh flat test world. Needs `-WithTestServer` at install. |
 
 ## Troubleshooting
 
@@ -190,7 +230,7 @@ runtime\node\node.exe scripts\rcon_client.js $ip $port $pass "whitelist add Frie
 <details>
 <summary><b>The bot answers slowly or the game stutters</b></summary>
 
-Check the **Consumos** card. If VRAM is full, the model spills into system RAM and slows down a lot. Close other GPU-heavy apps, lower Voxy's render distance, or use a smaller quantization in `config/llm.json`.
+Check the **Resources** card on the dashboard. If VRAM is full, the model spills into system RAM and slows down a lot. Close other GPU-heavy apps, lower Voxy's render distance, or use a smaller quantization in `config/llm.json`.
 </details>
 
 <details>
@@ -205,15 +245,27 @@ Check the **Consumos** card. If VRAM is full, the model spills into system RAM a
 Voxy is alpha software and needs matching Sodium and Fabric API versions. Use exactly the versions in [`scripts/downloads.json`](scripts/downloads.json). If it still crashes, delete `voxy-*.jar` from the instance's `mods` folder. Everything else works without it.
 </details>
 
-<details>
-<summary><b>I want the bot to speak English</b></summary>
-
-Set `"language": "English"` in `mindcraft/settings.js` and restart the bot. The internal prompts are already in English.
-</details>
-
 ## Uninstall
 
 Run `scripts\stop_all.ps1` and delete the folder. If you used `-DeployPrism`, also delete the **IAMine** instance in Prism Launcher. Nothing else was installed.
+
+## Roadmap
+
+- [x] Portable, hash-verified one-command installer
+- [x] Live dashboard with per-process resource usage
+- [x] Automatic bot skin
+- [ ] English dashboard UI and English as the default bot language
+- [ ] Linux and macOS scripts
+- [ ] Several bots at once, each with its own card
+
+## Contributing
+
+Questions, bug reports and ideas are welcome in [Issues](https://github.com/Muurrcc/FelixIAMinecraft/issues). Pull requests are welcome too:
+
+1. Fork the repo and create a branch (`git checkout -b fix/my-change`).
+2. Keep changes to `mindcraft/` small and list them under [Changes to Mindcraft](#changes-to-mindcraft), so upstream updates stay easy.
+3. If you touch the bot or the server, run `scripts\run_fase2_tests.ps1` (needs `-WithTestServer` at install).
+4. Open a pull request that explains what changed and why.
 
 ## Credits
 
@@ -226,4 +278,4 @@ This project isn't affiliated with Mojang, Microsoft or Anthropic. "Claude" is j
 
 ## License
 
-[MIT](LICENSE). The vendored Mindcraft keeps its own [MIT license](mindcraft/LICENSE). The installer downloads third-party software under its own licenses and doesn't redistribute it.
+[MIT](LICENSE) © FelixIAMinecraft contributors. The vendored Mindcraft keeps its own [MIT license](mindcraft/LICENSE). The installer downloads third-party software under its own licenses and doesn't redistribute it.
