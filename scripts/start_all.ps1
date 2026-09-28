@@ -22,7 +22,7 @@ $pids = @{}
 # Perfiles de los bots: config\bots.json + personalities.json + llm.json (regla D.7, fuente unica config\).
 # Va antes del servidor porque tambien anade los bots nuevos a la whitelist.
 & "$R\runtime\node\node.exe" "$R\mindcraft\tools\build_profiles.js"
-if ($LASTEXITCODE -ne 0) { throw "build_profiles.js fallo; revisa config\bots.json" }
+if ($LASTEXITCODE -ne 0) { throw "build_profiles.js failed; check config\bots.json" }
 $botsCfg = Get-Content "$R\config\bots.json" -Raw | ConvertFrom-Json
 $external = -not $Test -and $botsCfg.server.host -notin @('127.0.0.1', 'localhost')
 
@@ -51,21 +51,21 @@ function Wait-LogContains {
 }
 
 # 1) Ollama
-Write-Host "[1/4] Arrancando Ollama..."
+Write-Host "[1/4] Starting Ollama..."
 $ollama = Start-Process -FilePath "$R\runtime\ollama\ollama.exe" -ArgumentList "serve" -PassThru -WindowStyle Hidden `
     -RedirectStandardOutput "$R\logs\ollama_stdout.log" -RedirectStandardError "$R\logs\ollama_stderr.log"
 $pids.ollama = $ollama.Id
 if (-not (Wait-Port -HostName "127.0.0.1" -Port 11434 -TimeoutSec 30)) {
-    throw "Ollama no respondio en el puerto 11434 tras 30s. Ver logs\ollama_stderr.log"
+    throw "Ollama did not answer on port 11434 after 30s. See logs\ollama_stderr.log"
 }
-Write-Host "Ollama listo (PID $($ollama.Id))."
+Write-Host "Ollama ready (PID $($ollama.Id))."
 
 # 2) Servidor Paper (main o world_test segun -Test); con un servidor externo no se arranca el local
 if ($external) {
-    Write-Host "[2/4] Servidor externo $($botsCfg.server.host):$($botsCfg.server.port) (config\bots.json): no se arranca el local."
-    if ($SoloServidor) { Write-Host "SoloServidor no tiene sentido con un servidor externo."; exit 0 }
+    Write-Host "[2/4] Servidor externo $($botsCfg.server.host):$($botsCfg.server.port) (config\bots.json): not starting the local one."
+    if ($SoloServidor) { Write-Host "-ServerOnly does nothing with an external server."; exit 0 }
 } else {
-    Write-Host "[2/4] Arrancando servidor Paper ($serverPidKey)..."
+    Write-Host "[2/4] Starting the Paper server ($serverPidKey)..."
     Push-Location $serverDir
     $serverArgs = @("-Xms2G", "-Xmx6G", "-jar", "paper-1.21.6-48.jar", "--nogui")
     $paper = Start-Process -FilePath "$R\runtime\java\bin\java.exe" -ArgumentList $serverArgs -PassThru -WindowStyle Hidden `
@@ -73,23 +73,23 @@ if ($external) {
     Pop-Location
     $pids.$serverPidKey = $paper.Id
     if (-not (Wait-LogContains -LogPath "$R\logs\${serverLogPrefix}_stdout.log" -Text "Done (" -TimeoutSec 180)) {
-        throw "El servidor Paper no termino de arrancar tras 180s. Ver logs\${serverLogPrefix}_stdout.log"
+        throw "The Paper server did not finish starting after 180s. See logs\${serverLogPrefix}_stdout.log"
     }
-    Write-Host "Servidor Paper listo (PID $($paper.Id))."
+    Write-Host "Paper server ready (PID $($paper.Id))."
 }
 
 $pids | ConvertTo-Json | Set-Content "$R\run\pids.json"
 
 if ($SoloServidor) {
-    Write-Host "SoloServidor activo: no se lanza el bot. PIDs guardados en run\pids.json."
+    Write-Host "-ServerOnly: not starting the bot. PIDs saved in run\pids.json."
     exit 0
 }
 
 # 3) Perfiles ya generados antes de arrancar el servidor (para que la whitelist incluya a todos los bots)
-Write-Host "[3/4] Perfiles de los bots generados desde config\bots.json."
+Write-Host "[3/4] Bot profiles built from config\bots.json."
 
 # 4) Bot Mindcraft
-Write-Host "[4/4] Arrancando bot Mindcraft..."
+Write-Host "[4/4] Starting the Mindcraft bot..."
 Push-Location "$R\mindcraft"
 # Solo se fuerza el puerto con el servidor local; con uno externo manda config\bots.json.
 if (-not $external) { $env:MINDCRAFT_PORT = "$botPort" }
@@ -102,6 +102,6 @@ $pids | ConvertTo-Json | Set-Content "$R\run\pids.json"
 
 if (-not $Test) { & "$R\scripts\dashboard.ps1" }
 
-Write-Host "Todo arrancado. PIDs:"
+Write-Host "Everything is running. PIDs:"
 $pids | ConvertTo-Json
-Write-Host "Logs en $R\logs\. Para parar todo: scripts\stop_all.ps1"
+Write-Host "Logs in $R\logs\. To stop everything: scripts\stop_all.ps1"

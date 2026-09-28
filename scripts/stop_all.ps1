@@ -12,9 +12,9 @@ function Send-RconStop {
     $ip = $parts[0]; $port = [int]$parts[1]; $pass = $parts[2]
     try {
         & "$R\runtime\node\node.exe" "$R\scripts\rcon_client.js" $ip $port $pass "stop"
-        Write-Host "RCON stop enviado a $ip`:$port"
+        Write-Host "RCON stop sent to $ip`:$port"
     } catch {
-        Write-Host "No se pudo enviar RCON stop a $ip`:$port ($($_.Exception.Message))"
+        Write-Host "Could not send RCON stop to $ip`:$port ($($_.Exception.Message))"
     }
 }
 
@@ -30,7 +30,7 @@ if (Test-Path $pidsFile) {
         $procId = $prop.Value
         $p = Get-Process -Id $procId -ErrorAction SilentlyContinue
         if ($p) {
-            Write-Host "Deteniendo $($prop.Name) (PID $procId)"
+            Write-Host "Stopping $($prop.Name) (PID $procId)"
             Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
         }
     }
@@ -43,8 +43,8 @@ if (Test-Path $pidsFile) {
 Get-Process java, node, ollama, llama-server -ErrorAction SilentlyContinue | Where-Object {
     $_.Path -and $_.Path.StartsWith($R, [System.StringComparison]::OrdinalIgnoreCase)
 } | ForEach-Object {
-    Write-Host "Deteniendo proceso huerfano $($_.ProcessName) (PID $($_.Id))"
+    Write-Host "Stopping leftover process $($_.ProcessName) (PID $($_.Id))"
     Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
 }
 
-Write-Host "stop_all.ps1 completado."
+Write-Host "stop_all.ps1 done."

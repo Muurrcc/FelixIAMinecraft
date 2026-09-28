@@ -10,8 +10,8 @@ if (-not $up) {
     Start-Process -FilePath "$R\runtime\node\node.exe" -ArgumentList "`"$R\dashboard\server.mjs`"" -WorkingDirectory "$R\dashboard" -WindowStyle Hidden `
         -RedirectStandardOutput "$R\logs\dashboard_stdout.log" -RedirectStandardError "$R\logs\dashboard_stderr.log" | Out-Null
     Start-Sleep -Seconds 2
-    Write-Host "Dashboard arrancado en http://127.0.0.1:8090"
+    Write-Host "Dashboard started at http://127.0.0.1:8090"
 } else {
-    Write-Host "Dashboard ya estaba en marcha en http://127.0.0.1:8090"
+    Write-Host "Dashboard already running at http://127.0.0.1:8090"
 }
 if (-not $NoBrowser) { Start-Process "http://127.0.0.1:8090" }

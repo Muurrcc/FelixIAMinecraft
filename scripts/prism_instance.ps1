@@ -8,7 +8,7 @@ $R = $PSScriptRoot | Split-Path -Parent
 
 $prismCfg = "$env:APPDATA\PrismLauncher\prismlauncher.cfg"
 if (-not (Test-Path $prismCfg)) {
-    throw "No se encontro prismlauncher.cfg en $prismCfg. Prism Launcher no parece estar instalado para este usuario."
+    throw "prismlauncher.cfg not found at $prismCfg. Prism Launcher does not seem to be installed for this user."
 }
 
 $instanceDirLine = Get-Content $prismCfg | Where-Object { $_ -like 'InstanceDir=*' } | Select-Object -First 1
@@ -19,11 +19,11 @@ if (-not [System.IO.Path]::IsPathRooted($instanceDir)) { $instanceDir = Join-Pat
 $dest = Join-Path $instanceDir "IAMine"
 $src = "$R\client\IAMine"
 
-Write-Host "Copiando plantilla de instancia:"
-Write-Host "  origen : $src"
-Write-Host "  destino: $dest"
+Write-Host "Copying the instance template:"
+Write-Host "  from: $src"
+Write-Host "  to  : $dest"
 
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 robocopy $src $dest /E /XO /NFL /NDL /NJH /NJS | Out-Null
 
-Write-Host "Instancia IAMine desplegada en $dest."
+Write-Host "IAMine instance deployed to $dest."

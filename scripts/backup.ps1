@@ -10,7 +10,7 @@ $R = $PSScriptRoot | Split-Path -Parent
 $worldDirs = @("world", "world_nether", "world_the_end") | ForEach-Object { "$R\server\main\$_" } | Where-Object { Test-Path $_ }
 
 if ($worldDirs.Count -eq 0) {
-    Write-Host "No hay carpetas de mundo todavia en server\main (el servidor no se ha lanzado aun). Nada que respaldar."
+    Write-Host "No world folders in server\main yet (the server has never run). Nothing to back up."
     exit 0
 }
 
@@ -33,13 +33,13 @@ try {
     }
 } finally { $zip.Dispose(); $zipStream.Dispose() }
 Move-Item "$dest.part" $dest -Force
-Write-Host "Backup creado: $dest"
+Write-Host "Backup created: $dest"
 
 # Conservar solo los ultimos $Keep
 $backups = Get-ChildItem "$R\backups\world_*.zip" | Sort-Object LastWriteTime -Descending
 if ($backups.Count -gt $Keep) {
     $backups | Select-Object -Skip $Keep | ForEach-Object {
-        Write-Host "Eliminando backup antiguo: $($_.Name)"
+        Write-Host "Removing old backup: $($_.Name)"
         Remove-Item $_.FullName -Force
     }
 }

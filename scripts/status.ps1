@@ -4,7 +4,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 $R = $PSScriptRoot | Split-Path -Parent
 . "$R\scripts\env.ps1"
 
-Write-Host "=== Estado IAMine ($(Get-Date -Format s)) ==="
+Write-Host "=== FelixIAMinecraft status ($(Get-Date -Format s)) ==="
 
 $pidsFile = "$R\run\pids.json"
 if (Test-Path $pidsFile) {
@@ -16,14 +16,14 @@ if (Test-Path $pidsFile) {
             $mem = [math]::Round($p.WorkingSet64 / 1MB, 0)
             Write-Host "[OK]     $($prop.Name): PID $procId, RAM ${mem}MB"
         } else {
-            Write-Host "[CAIDO]  $($prop.Name): PID $procId ya no existe"
+            Write-Host "[DOWN]   $($prop.Name): PID $procId is gone"
         }
     }
 } else {
-    Write-Host "No hay run\pids.json - nada arrancado con start_all.ps1 (o ya se paro)."
+    Write-Host "No run\pids.json - nothing started with start_all.ps1 (or already stopped)."
 }
 
-Write-Host "--- Puertos ---"
+Write-Host "--- Ports ---"
 foreach ($p in @(11434, 25565, 25566, 25575, 25576, 8080)) {
     $open = Test-NetConnection -ComputerName 127.0.0.1 -Port $p -InformationLevel Quiet -WarningAction SilentlyContinue
     $label = switch ($p) {
@@ -34,14 +34,14 @@ foreach ($p in @(11434, 25565, 25566, 25575, 25576, 8080)) {
         25576 { "RCON world_test" }
         8080  { "Mindserver UI" }
     }
-    Write-Host "$(if ($open) {'[abierto]'} else {'[cerrado]'}) $p ($label)"
+    Write-Host "$(if ($open) {'[open]  '} else {'[closed]'}) $p ($label)"
 }
 
-Write-Host "--- Ollama (modelos cargados) ---"
+Write-Host "--- Ollama (loaded models) ---"
 if (Test-NetConnection -ComputerName 127.0.0.1 -Port 11434 -InformationLevel Quiet -WarningAction SilentlyContinue) {
     & "$R\runtime\ollama\ollama.exe" ps
-} else { Write-Host "Ollama apagado." }
+} else { Write-Host "Ollama is off." }
 
-Write-Host "--- Disco ---"
+Write-Host "--- Disk ---"
 $drive = Get-PSDrive -Name ($R.Substring(0,1))
-Write-Host "Unidad $($R.Substring(0,1)): libres $([math]::Round($drive.Free/1GB,1)) GB de $([math]::Round(($drive.Free+$drive.Used)/1GB,1)) GB"
+Write-Host "Drive $($R.Substring(0,1)): $([math]::Round($drive.Free/1GB,1)) GB free of $([math]::Round(($drive.Free+$drive.Used)/1GB,1)) GB"

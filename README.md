@@ -58,9 +58,9 @@ Claude joins your world as a real player. It chats, follows you, mines, crafts, 
 | OS | Windows 10/11 x64 (PowerShell 5.1+, built in) | Windows 11 |
 | GPU | 8 GB VRAM (NVIDIA works out of the box; AMD with `-Rocm`) | 12 GB NVIDIA |
 | RAM | 16 GB | 32 GB |
-| Disk | ~15 GB free | |
+| Disk | ~20 GB free (the install takes ~10 GB; worlds and backups grow) | |
 | Minecraft | Java Edition **1.21.6** ([Prism Launcher](https://prismlauncher.org) recommended) | |
-| Tools | [Git](https://git-scm.com) to clone (or download the ZIP from GitHub) | |
+| Tools | [Git](https://git-scm.com) to clone, or the ZIP from [Releases](https://github.com/Muurrcc/FelixIAMinecraft/releases/latest) | |
 
 > [!NOTE]
 > The model takes about 5.5 GB of VRAM and the Minecraft client needs the rest, so 8 GB is tight and 12 GB is comfortable. Without a GPU it still runs on the CPU, but replies take tens of seconds.
@@ -76,6 +76,8 @@ cd FelixIAMinecraft
 # Downloads everything into this folder (about 7 GB, 10-20 min)
 powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Player YourMinecraftName -DeployPrism
 ```
+
+No Git? Download `FelixIAMinecraft-vX.Y.Z.zip` from [Releases](https://github.com/Muurrcc/FelixIAMinecraft/releases/latest), unzip it, open PowerShell in that folder and run the same `install.ps1` line.
 
 `-Player` must be your exact Minecraft username, because it goes on the server whitelist.
 
@@ -220,7 +222,7 @@ All scripts live in `scripts\` and run with `powershell -ExecutionPolicy Bypass 
 | Script | What it does |
 |---|---|
 | `install.ps1` | Downloads and sets up everything. See [Install](#install). |
-| `start_all.ps1` | Builds the bot profiles, then starts Ollama, Paper (waits for "Done"), the bots and the dashboard. `-ServerOnly` starts only the server. With an external server in `config/bots.json` it skips the local one. |
+| `start_all.ps1` | Builds the bot profiles, then starts Ollama, Paper (waits for "Done"), the bots and the dashboard. `-ServerOnly` starts Ollama and the server, without the bots or the dashboard. With an external server in `config/bots.json` it skips the local one. |
 | `stop_all.ps1` | Stops the server over RCON (the world is saved), then stops the bot and Ollama, and cleans up leftover processes. |
 | `status.ps1` | Shows which parts are running, open ports, loaded models and free disk space. |
 | `dashboard.ps1` | Starts only the dashboard. |
