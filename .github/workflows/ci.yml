@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'   # weekly: re-download everything to catch dead links or changed files
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Syntax and config
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PowerShell scripts parse and are ASCII-only
+        shell: powershell   # Windows PowerShell 5.1, the one users run
+        run: |
+          $bad = 0
+          Get-ChildItem -Recurse -Include *.ps1 -File | ForEach-Object {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors)
+            foreach ($e in $errors) { Write-Host "::error file=$($_.FullName),line=$($e.Extent.StartLineNumber)::$($e.Message)"; $bad++ }
+            # PowerShell 5.1 reads UTF-8 files without a BOM as ANSI, so any non-ASCII byte can break parsing.
+            $bytes = [IO.File]::ReadAllBytes($_.FullName)
+            $i = [Array]::FindIndex($bytes, [Predicate[byte]]{ param($b) $b -gt 127 })
+            if ($i -ge 0) { Write-Host "::error file=$($_.FullName)::non-ASCII byte at offset $i"; $bad++ }
+          }
+          if ($bad) { exit 1 }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          set -e
+          files=$(ls dashboard/*.mjs scripts/*.js scripts/*.mjs mindcraft/tools/*.js mindcraft/settings.js mindcraft/src/utils/mcdata.js mindcraft/src/agent/library/full_state.js .github/scripts/*.mjs 2>/dev/null)
+          for f in $files; do echo "node --check $f"; node --check "$f"; done
+
+      - name: JSON config is valid
+        shell: bash
+        run: |
+          for f in config/*.json scripts/downloads.json mindcraft/profiles/*.json; do
+            node -e "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8'))" "$f" || { echo "::error file=$f::invalid JSON"; exit 1; }
+          done
+
+      - name: Batch files use CRLF
+        shell: bash
+        run: |
+          for f in *.bat; do
+            if grep -q $'[^\r]$' "$f"; then echo "::error file=$f::LF line endings (cmd.exe needs CRLF)"; exit 1; fi
+          done
+
+  downloads:
+    name: downloads.json hashes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check format and verify small downloads
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: node .github/scripts/check_downloads.mjs
+      - name: Verify every download
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: node .github/scripts/check_downloads.mjs --all

@@ -1,0 +1,15 @@
+{
+  "_comment": "Which bots join, with which personality (see config/personalities.json), and which Minecraft server they join. The dashboard edits this file; restart the bot after editing it by hand. server.auth is \"offline\" for servers with online-mode=false (like the bundled one) or \"microsoft\" if the bot has its own Minecraft account (the sign-in code shows up in the dashboard log). version \"auto\" asks the server.",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 25565,
+    "auth": "offline",
+    "version": "1.21.6"
+  },
+  "bots": [
+    {
+      "name": "Claude",
+      "personality": "explorer"
+    }
+  ]
+}

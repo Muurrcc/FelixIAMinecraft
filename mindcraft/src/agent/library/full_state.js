@@ -12,6 +12,19 @@ import { getLlmCalls } from '../../models/llm_stats.js';
 
 const clip = (s, n) => (typeof s === 'string' && s.length > n ? s.slice(0, n) + '…' : s);
 
+// Nearest kind of log, so the dashboard's "Collect wood" works in any biome. Block-id matching uses
+// mineflayer's palette fast path; cached for 10 s because the state is polled every second.
+const logCache = new WeakMap();
+function nearestLogType(bot) {
+    const c = logCache.get(bot);
+    if (c && Date.now() - c.at < 10000) return c.name;
+    const ids = Object.values(bot.registry.blocksByName)
+        .filter(b => b.name.endsWith('_log') && !b.name.startsWith('stripped_')).map(b => b.id);
+    const name = bot.findBlock({ matching: ids, maxDistance: 48 })?.name || null;
+    logCache.set(bot, { at: Date.now(), name });
+    return name;
+}
+
 export function getFullState(agent) {
     const bot = agent.bot;
 
@@ -101,6 +114,7 @@ export function getFullState(agent) {
             humanPlayers: players,
             botPlayers: bots,
             entityTypes: getNearbyEntityTypes(bot).filter(t => t !== 'player' && t !== 'item'),
+            logType: nearestLogType(bot),
         },
         modes: {
             summary: bot.modes.getMiniDocs()

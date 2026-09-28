@@ -19,6 +19,13 @@ $botPort = if ($Test) { 25566 } else { 25565 }
 
 $pids = @{}
 
+# Perfiles de los bots: config\bots.json + personalities.json + llm.json (regla D.7, fuente unica config\).
+# Va antes del servidor porque tambien anade los bots nuevos a la whitelist.
+& "$R\runtime\node\node.exe" "$R\mindcraft\tools\build_profiles.js"
+if ($LASTEXITCODE -ne 0) { throw "build_profiles.js fallo; revisa config\bots.json" }
+$botsCfg = Get-Content "$R\config\bots.json" -Raw | ConvertFrom-Json
+$external = -not $Test -and $botsCfg.server.host -notin @('127.0.0.1', 'localhost')
+
 function Wait-Port {
     param([string]$HostName, [int]$Port, [int]$TimeoutSec = 60)
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
@@ -53,18 +60,23 @@ if (-not (Wait-Port -HostName "127.0.0.1" -Port 11434 -TimeoutSec 30)) {
 }
 Write-Host "Ollama listo (PID $($ollama.Id))."
 
-# 2) Servidor Paper (main o world_test segun -Test)
-Write-Host "[2/4] Arrancando servidor Paper ($serverPidKey)..."
-Push-Location $serverDir
-$serverArgs = @("-Xms2G", "-Xmx6G", "-jar", "paper-1.21.6-48.jar", "--nogui")
-$paper = Start-Process -FilePath "$R\runtime\java\bin\java.exe" -ArgumentList $serverArgs -PassThru -WindowStyle Hidden `
-    -RedirectStandardOutput "$R\logs\${serverLogPrefix}_stdout.log" -RedirectStandardError "$R\logs\${serverLogPrefix}_stderr.log"
-Pop-Location
-$pids.$serverPidKey = $paper.Id
-if (-not (Wait-LogContains -LogPath "$R\logs\${serverLogPrefix}_stdout.log" -Text "Done (" -TimeoutSec 180)) {
-    throw "El servidor Paper no termino de arrancar tras 180s. Ver logs\${serverLogPrefix}_stdout.log"
+# 2) Servidor Paper (main o world_test segun -Test); con un servidor externo no se arranca el local
+if ($external) {
+    Write-Host "[2/4] Servidor externo $($botsCfg.server.host):$($botsCfg.server.port) (config\bots.json): no se arranca el local."
+    if ($SoloServidor) { Write-Host "SoloServidor no tiene sentido con un servidor externo."; exit 0 }
+} else {
+    Write-Host "[2/4] Arrancando servidor Paper ($serverPidKey)..."
+    Push-Location $serverDir
+    $serverArgs = @("-Xms2G", "-Xmx6G", "-jar", "paper-1.21.6-48.jar", "--nogui")
+    $paper = Start-Process -FilePath "$R\runtime\java\bin\java.exe" -ArgumentList $serverArgs -PassThru -WindowStyle Hidden `
+        -RedirectStandardOutput "$R\logs\${serverLogPrefix}_stdout.log" -RedirectStandardError "$R\logs\${serverLogPrefix}_stderr.log"
+    Pop-Location
+    $pids.$serverPidKey = $paper.Id
+    if (-not (Wait-LogContains -LogPath "$R\logs\${serverLogPrefix}_stdout.log" -Text "Done (" -TimeoutSec 180)) {
+        throw "El servidor Paper no termino de arrancar tras 180s. Ver logs\${serverLogPrefix}_stdout.log"
+    }
+    Write-Host "Servidor Paper listo (PID $($paper.Id))."
 }
-Write-Host "Servidor Paper listo (PID $($paper.Id))."
 
 $pids | ConvertTo-Json | Set-Content "$R\run\pids.json"
 
@@ -73,17 +85,17 @@ if ($SoloServidor) {
     exit 0
 }
 
-# 3) Sincronizar config LLM -> perfil del bot (regla D.7, fuente unica config\llm.json)
-Write-Host "[3/4] Sincronizando config\llm.json con el perfil del bot..."
-& "$R\runtime\node\node.exe" "$R\mindcraft\tools\apply_llm_config.js" "$R\mindcraft\profiles\claude_bot.json"
+# 3) Perfiles ya generados antes de arrancar el servidor (para que la whitelist incluya a todos los bots)
+Write-Host "[3/4] Perfiles de los bots generados desde config\bots.json."
 
 # 4) Bot Mindcraft
-Write-Host "[4/4] Arrancando bot Mindcraft (puerto $botPort)..."
+Write-Host "[4/4] Arrancando bot Mindcraft..."
 Push-Location "$R\mindcraft"
-$env:MINDCRAFT_PORT = "$botPort"
+# Solo se fuerza el puerto con el servidor local; con uno externo manda config\bots.json.
+if (-not $external) { $env:MINDCRAFT_PORT = "$botPort" }
 $bot = Start-Process -FilePath "$R\runtime\node\node.exe" -ArgumentList "main.js" -PassThru -WindowStyle Hidden `
     -RedirectStandardOutput "$R\logs\bot_stdout.log" -RedirectStandardError "$R\logs\bot_stderr.log"
-Remove-Item Env:\MINDCRAFT_PORT
+Remove-Item Env:\MINDCRAFT_PORT -ErrorAction SilentlyContinue
 Pop-Location
 $pids.bot = $bot.Id
 $pids | ConvertTo-Json | Set-Content "$R\run\pids.json"

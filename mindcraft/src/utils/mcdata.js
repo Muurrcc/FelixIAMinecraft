@@ -1,4 +1,5 @@
 import minecraftData from 'minecraft-data';
+import { fileURLToPath } from 'url';
 import settings from '../agent/settings.js';
 import { createBot } from 'mineflayer';
 import prismarine_items from 'prismarine-item';
@@ -58,6 +59,8 @@ export function initBot(username) {
         host: settings.host,
         port: settings.port,
         auth: settings.auth,
+        // Microsoft login tokens stay in the project folder, not in the user's .minecraft.
+        profilesFolder: fileURLToPath(new URL('../../../data/auth', import.meta.url)),
         version: mc_version,
         checkTimeoutInterval: 60000,  // 60s keep-alive check (default 30s) — reduces disconnects on slow servers
     }

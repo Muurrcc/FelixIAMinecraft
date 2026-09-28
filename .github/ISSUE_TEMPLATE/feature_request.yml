@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea for the bot, the dashboard or the installer
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do that you can't today?
+      placeholder: When I play with two bots I'd like to ...
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could it work?
+      description: A rough idea is enough. Mockups or examples from other projects help.
+  - type: checkboxes
+    id: local
+    attributes:
+      label: Scope
+      options:
+        - label: It works fully offline (no cloud APIs or accounts), like the rest of the project

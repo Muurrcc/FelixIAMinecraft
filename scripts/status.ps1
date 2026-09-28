@@ -20,7 +20,7 @@ if (Test-Path $pidsFile) {
         }
     }
 } else {
-    Write-Host "No hay run\pids.json — nada arrancado con start_all.ps1 (o ya se paro)."
+    Write-Host "No hay run\pids.json - nada arrancado con start_all.ps1 (o ya se paro)."
 }
 
 Write-Host "--- Puertos ---"
@@ -38,9 +38,9 @@ foreach ($p in @(11434, 25565, 25566, 25575, 25576, 8080)) {
 }
 
 Write-Host "--- Ollama (modelos cargados) ---"
-if (Test-Path "$R\runtime\ollama\ollama.exe") {
+if (Test-NetConnection -ComputerName 127.0.0.1 -Port 11434 -InformationLevel Quiet -WarningAction SilentlyContinue) {
     & "$R\runtime\ollama\ollama.exe" ps
-}
+} else { Write-Host "Ollama apagado." }
 
 Write-Host "--- Disco ---"
 $drive = Get-PSDrive -Name ($R.Substring(0,1))

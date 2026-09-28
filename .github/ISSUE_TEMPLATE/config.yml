@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Mindcraft (the agent framework)
+    url: https://github.com/mindcraft-bots/mindcraft/issues
+    about: Bugs in the bot's core behaviour that also happen in upstream Mindcraft
+  - name: Andy-4 (the model)
+    url: https://ollama.com/sweaterdog/andy-4
+    about: Questions about the Minecraft-tuned model itself

@@ -15,7 +15,8 @@ param(
     [switch]$Rocm,            # AMD GPU: add Ollama's ROCm libraries
     [switch]$SkipModels,      # don't pull the Ollama models (~5 GB)
     [switch]$SkipSkin,        # don't boot the server once to give the bot its skin
-    [switch]$DeployPrism      # copy the client instance into Prism Launcher's instances folder
+    [switch]$DeployPrism,     # copy the client instance into Prism Launcher's instances folder
+    [switch]$SkipChecks       # don't stop on failed pre-flight checks (they are still printed)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -121,6 +122,58 @@ function Test-Port([int]$Port) {
 
 Write-Host "FelixIAMinecraft installer - everything goes into $R" -ForegroundColor White
 
+# Pre-flight: catch the usual blockers before downloading ~8 GB. "fail" stops the install
+# (unless -SkipChecks), "warn" only prints.
+Step "Pre-flight checks"
+$problems = 0
+function Check([string]$Level, [string]$Text) {
+    $color = @{ ok = 'DarkGray'; warn = 'Yellow'; fail = 'Red' }[$Level]
+    Write-Host ("    [{0,-4}] {1}" -f $Level, $Text) -ForegroundColor $color
+    if ($Level -eq 'fail') { $script:problems++ }
+}
+
+$build = [Environment]::OSVersion.Version.Build
+# curl.exe and tar.exe ship with Windows 10 1803 (build 17134) and later.
+if ($build -ge 17134) { Check ok "Windows build $build" }
+else { Check fail "Windows build $build is too old (need Windows 10 1803 or newer for curl.exe/tar.exe)" }
+
+$ramGb = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 1)
+if ($ramGb -ge 16) { Check ok "RAM $ramGb GB" }
+elseif ($ramGb -ge 12) { Check warn "RAM $ramGb GB (16 GB recommended: the server takes up to 6 GB, the model 5 GB, plus Minecraft)" }
+else { Check fail "RAM $ramGb GB (need at least 12 GB, 16 GB recommended)" }
+
+$vramGb = $null
+$smi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
+if ($smi) {
+    $mb = & $smi.Source --query-gpu=memory.total --format=csv,noheader,nounits 2>$null | Select-Object -First 1
+    if ($mb -match '^\s*\d+') { $vramGb = [math]::Round([int]$mb / 1024, 1) }
+}
+if ($null -eq $vramGb) {
+    # Win32_VideoController.AdapterRAM is a uint32 (caps at 4 GB); the display driver's registry key has the real size.
+    $bytes = Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0*' -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.'HardwareInformation.qwMemorySize' } | Where-Object { $_ -is [ValueType] } | Measure-Object -Maximum
+    if ($bytes.Count) { $vramGb = [math]::Round($bytes.Maximum / 1GB, 1) }
+}
+if ($null -eq $vramGb) { Check warn "Could not read the GPU memory. Andy-4 wants ~6 GB of VRAM; with less it replies slowly." }
+elseif ($vramGb -ge 6) { Check ok "GPU memory $vramGb GB" }
+else { Check warn "GPU memory $vramGb GB. Andy-4 wants ~6 GB of VRAM; with less it runs partly on the CPU and replies slowly." }
+
+$drive = Get-PSDrive -Name ($R.Substring(0, 1))
+$freeGb = [math]::Round($drive.Free / 1GB, 1)
+if ($freeGb -ge 20) { Check ok "Free disk on $($drive.Name): $freeGb GB" }
+elseif ($freeGb -ge 12) { Check warn "Free disk on $($drive.Name): $freeGb GB (install takes ~10 GB; worlds and backups grow)" }
+else { Check fail "Free disk on $($drive.Name): $freeGb GB (need at least 12 GB)" }
+
+foreach ($p in @(@{ n = 25565; w = 'Minecraft server' }, @{ n = 25575; w = 'RCON' }, @{ n = 8080; w = 'Mindcraft' }, @{ n = 8090; w = 'dashboard' }, @{ n = 11434; w = 'Ollama' })) {
+    if (Test-Port $p.n) { Check warn "Port $($p.n) ($($p.w)) is already in use. Stop whatever uses it before starting FelixIAMinecraft." }
+    else { Check ok "Port $($p.n) ($($p.w)) free" }
+}
+
+if ($problems -gt 0) {
+    if ($SkipChecks) { Write-Warning "$problems pre-flight check(s) failed; continuing because of -SkipChecks." }
+    else { throw "$problems pre-flight check(s) failed. Fix them or re-run with -SkipChecks to install anyway." }
+}
+
 if (-not $AcceptEula) {
     Write-Host "`nThe Minecraft server needs you to accept the Minecraft EULA: https://aka.ms/MinecraftEULA"
     $answer = Read-Host "Do you accept it? (y/N)"
@@ -143,6 +196,9 @@ if ($Rocm -and -not (Test-Path "$R\runtime\ollama\lib\ollama\rocm")) {
 
 Step "Paper server (server\main)"
 Initialize-Server -Dir "$R\server\main" -Template 'main.properties' -RconFile "$R\run\rcon_main.txt" -RconPort 25575 -Whitelist @($Player, 'Claude')
+# The dashboard's quick commands ("Follow me", "Come here") target this player when nobody is next to the bot.
+New-Item -ItemType Directory -Force -Path "$R\data" | Out-Null
+Set-Content -Path "$R\data\player.txt" -Value $Player -Encoding ASCII
 foreach ($p in $manifest.plugins) {
     $jar = Get-Verified -Url $p.url -File $p.file -Sha512 $p.sha512
     Copy-Item $jar "$R\server\main\plugins\$($p.file)" -Force

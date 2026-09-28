@@ -32,6 +32,7 @@
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; min-height: 100dvh; color: var(--label); background: var(--bg);
@@ -248,6 +249,71 @@
   dialog .acts button + button { border-left: .5px solid var(--sep); color: var(--red); font-weight: 600; }
   dialog .acts button:active { background: rgba(255, 255, 255, .08); }
 
+  /* ── Selector segmentado (bot activo, local/externo) ── */
+  .seg { display: inline-flex; padding: 2px; border-radius: 9px; background: rgba(118, 118, 128, .24); gap: 2px; }
+  .seg[hidden] { display: none; }
+  .seg button {
+    appearance: none; border: 0; background: none; color: var(--label); font: 500 .8125rem/1 var(--font);
+    padding: .45rem .8rem; border-radius: 7px; cursor: pointer; transition: background-color 200ms ease, transform 160ms var(--ease-out);
+  }
+  .seg button[aria-pressed="true"] { background: #636366; box-shadow: 0 3px 8px rgba(0, 0, 0, .12), 0 3px 1px rgba(0, 0, 0, .04); font-weight: 600; }
+  .seg button:active { transform: scale(0.96); }
+  .avatar .letter { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 14px; background: linear-gradient(135deg, var(--tint), var(--purple)); font: 700 1.5rem/1 var(--font-display); }
+  .avatar .letter[hidden] { display: none; }
+
+  /* ── Comandos rapidos ── */
+  .chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .75rem; }
+  .chip {
+    appearance: none; border: .5px solid var(--sep); background: var(--surface-2); color: var(--label); cursor: pointer;
+    font: 500 .75rem/1 var(--font); padding: .45rem .75rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .35rem;
+    transition: transform 160ms var(--ease-out), background-color 200ms ease, opacity 200ms ease;
+  }
+  .chip:active:not(:disabled) { transform: scale(0.95); transition-duration: 80ms; }
+  .chip:disabled { opacity: .4; cursor: default; }
+  .chip.danger { color: #ff6961; }
+  @media (hover: hover) and (pointer: fine) { .chip:hover:not(:disabled) { background: var(--surface-3); } }
+
+  /* ── Formularios ── */
+  .field, select.field {
+    min-width: 0; background: var(--surface-3); border: 0; color: var(--label); border-radius: 8px;
+    padding: .4rem .6rem; font: inherit; font-size: .8125rem;
+  }
+  select.field { appearance: none; padding-right: 1.6rem; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--label-2) 50%), linear-gradient(135deg, var(--label-2) 50%, transparent 50%);
+    background-position: calc(100% - .8rem) 55%, calc(100% - .55rem) 55%; background-size: 4px 4px; background-repeat: no-repeat; }
+  .field:focus-visible, select:focus-visible, .chip:focus-visible, .seg button:focus-visible, .switch:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .list > div.ctl { align-items: center; padding: .4rem 0; }
+  .form { display: grid; gap: .6rem; }
+  .form label { display: grid; gap: .25rem; font-size: .6875rem; color: var(--label-2); }
+  .form .two { display: grid; grid-template-columns: 1fr 6rem; gap: .6rem; }
+  .form .field { width: 100%; }
+  .addrow { display: flex; gap: .5rem; margin-top: .6rem; }
+  .addrow .field { flex: 1; }
+  .actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+  .icon-btn { appearance: none; border: 0; background: none; color: var(--label-3); cursor: pointer; padding: .25rem; border-radius: 6px; line-height: 0; transition: color 200ms ease; }
+  .icon-btn:hover:not(:disabled) { color: var(--red); }
+  .icon-btn:disabled { visibility: hidden; }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .switch {
+    appearance: none; width: 42px; height: 26px; border-radius: 999px; background: rgba(120, 120, 128, .32); position: relative; cursor: pointer; margin: 0;
+    transition: background-color 200ms ease; flex: none;
+  }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .15); transition: transform 240ms var(--ease-out); }
+  .switch:checked { background: var(--green); }
+  .switch:checked::after { transform: translateX(16px); }
+  .model-row { display: grid !important; grid-template-columns: 1fr auto; gap: .2rem .75rem; align-items: center; }
+  .model-row span { text-align: left; }
+  .model-row .nm { font-weight: 600; overflow-wrap: anywhere; }
+  #tgtMode { display: flex; } #tgtMode button { flex: 1; }
+  .model-row .meta { grid-column: 1; color: var(--label-2); font-size: .6875rem; }
+  .model-row .btns { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: .35rem; }
+  .model-row .btn { padding: .4rem .7rem; font-size: .75rem; }
+  .tag { font-size: .625rem; font-weight: 600; padding: .1rem .4rem; border-radius: 5px; background: rgba(48, 209, 88, .15); color: var(--green); margin-left: .35rem; vertical-align: 1px; }
+  .callout { margin-top: .75rem; padding: .7rem .8rem; border-radius: 12px; background: rgba(10, 132, 255, .14); font-size: .8125rem; line-height: 1.45; }
+  .callout[hidden] { display: none; }
+  .callout b { font: 700 1.125rem var(--mono); letter-spacing: .08em; }
+  .card:nth-child(9) { animation-delay: 320ms; } .card:nth-child(10) { animation-delay: 360ms; } .card:nth-child(11) { animation-delay: 400ms; }
+
   /* ── Accesibilidad ── */
   @media (prefers-reduced-motion: reduce) {
     .card { animation: fade 200ms ease both; }
@@ -256,7 +322,8 @@
     @starting-style { .msg { transform: none; } }
     #toast, #toast.show { transform: translate(-50%, 0); }
     dialog, dialog[open] { transform: none; }
-    .btn:active:not(:disabled), .send:active:not(:disabled) { transform: none; }
+    .btn:active:not(:disabled), .send:active:not(:disabled), .chip:active:not(:disabled), .seg button:active { transform: none; }
+    .switch::after { transition-duration: 0ms; }
     .track i, .ring .val { transition-duration: 0ms; }
   }
   @media (prefers-reduced-transparency: reduce) {
@@ -271,11 +338,12 @@
 </head>
 <body>
 <header>
-  <div class="avatar" id="avatar" data-state="off"><canvas id="head" width="8" height="8" aria-label="Claude's skin" data-t-aria="skinAlt"></canvas></div>
+  <div class="avatar" id="avatar" data-state="off"><canvas id="head" width="8" height="8" aria-label="Claude's skin" data-t-aria="skinAlt"></canvas><span class="letter" id="letter" hidden></span></div>
   <div class="who-box">
-    <h1>Claude</h1>
+    <h1 id="botName">Claude</h1>
     <div class="sub" id="activity" data-t="noBot">Not connected to the bot</div>
   </div>
+  <div class="seg" id="botSel" role="group" aria-label="Bot" hidden></div>
   <div class="services">
     <div class="svc" id="svc-server" data-state="off">
       <span class="dot"></span>
@@ -361,6 +429,12 @@
       <h2 data-t="cThoughts">Thoughts &amp; conversation</h2>
     </div>
     <div class="feed" id="thoughts" aria-live="polite"><div class="empty-state" data-t="noThoughts">No thoughts yet.</div></div>
+    <div class="chips" id="chips">
+      <button class="chip" data-cmd="follow" disabled><span aria-hidden="true">👣</span><span data-t="qFollow">Follow me</span></button>
+      <button class="chip" data-cmd="come" disabled><span aria-hidden="true">📍</span><span data-t="qCome">Come here</span></button>
+      <button class="chip" data-cmd="wood" disabled><span aria-hidden="true">🪵</span><span data-t="qWood">Collect wood</span></button>
+      <button class="chip danger" data-cmd="stop" disabled><span aria-hidden="true">✋</span><span data-t="qStop">Stop</span></button>
+    </div>
     <form class="composer" id="chat">
       <input id="chatIn" placeholder="Message Claude like in the game chat…" data-t-ph="chatPh" autocomplete="off" enterkeyhint="send">
       <button class="send" id="sendBtn" aria-label="Send" data-t-aria="send" disabled>
@@ -412,6 +486,70 @@
     <h3 data-t="server">Server</h3>
     <pre class="well" id="serverLog" style="max-height:11rem"></pre>
   </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#d97757" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.5A6.5 6.5 0 0 1 21.5 20"/></svg>
+      <h2 data-t="cBots">Bots</h2>
+    </div>
+    <div class="list" id="botsList"></div>
+    <form class="addrow" id="addBot">
+      <input class="field" id="newBot" placeholder="Name" data-t-ph="newBotPh" maxlength="16" autocomplete="off" pattern="[A-Za-z0-9_]{3,16}">
+      <select class="field" id="newPers" aria-label="Personality" data-t-aria="personality"></select>
+      <button class="btn plain" id="addBtn" data-t="add">Add</button>
+    </form>
+    <h3 data-t="reliability">Reliability</h3>
+    <div class="list">
+      <div class="ctl"><b data-t="autoRestart">Restart the bot if it crashes</b><input type="checkbox" class="switch" id="autoRestart" role="switch"></div>
+      <div><b data-t="restarts">Automatic restarts</b><span class="num" id="restarts">0</span></div>
+    </div>
+    <div class="note" data-t="botsNote">Changes restart the bot. Up to 4 bots; they share one model, so each extra bot makes replies slower.</div>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#bf5af2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7l9 5 9-5z"/><path d="m3 12 9 5 9-5M3 17l9 5 9-5"/></svg>
+      <h2 data-t="cModel">Model</h2>
+    </div>
+    <div class="list" id="modelsList"><div><span class="muted">–</span></div></div>
+    <div class="note" data-t="modelNote">Speed comes from the bot's real replies, or from Measure (one short fixed prompt). Changing the model restarts the bot.</div>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      <h2 data-t="cWorld">World &amp; connection</h2>
+    </div>
+    <form class="form" id="targetForm">
+      <div class="seg" id="tgtMode" role="group">
+        <button type="button" data-mode="local" data-t="thisPc">This PC</button>
+        <button type="button" data-mode="external" data-t="otherServer">Another server</button>
+      </div>
+      <div id="extFields" class="form">
+        <div class="two">
+          <label><span data-t="host">Address</span><input class="field" id="tHost" placeholder="play.example.com" autocomplete="off" spellcheck="false"></label>
+          <label><span data-t="port">Port</span><input class="field num" id="tPort" type="number" min="1" max="65535" value="25565"></label>
+        </div>
+        <div class="two">
+          <label><span data-t="account">Bot account</span>
+            <select class="field" id="tAuth"><option value="offline" data-t="authOffline">Offline (no account)</option><option value="microsoft" data-t="authMs">Microsoft account</option></select></label>
+          <label><span data-t="version">Version</span><input class="field" id="tVersion" placeholder="auto" autocomplete="off" spellcheck="false"></label>
+        </div>
+      </div>
+      <div><button class="btn go" id="tSave" data-t="save">Save</button></div>
+    </form>
+    <div class="callout" id="msCode" hidden></div>
+    <div class="note" id="tgtNote"></div>
+    <h3 data-t="backups">Backups</h3>
+    <div class="list">
+      <div class="ctl"><b data-t="autoBackup">Automatic backup</b>
+        <select class="field" id="backupHours" aria-label="Automatic backup" data-t-aria="autoBackup">
+          <option value="0" data-t="off">Off</option><option value="1">1 h</option><option value="3">3 h</option><option value="6">6 h</option><option value="12">12 h</option><option value="24">24 h</option>
+        </select></div>
+      <div><b data-t="lastBackup">Last backup</b><span id="lastBackup">–</span></div>
+    </div>
+    <div class="actions"><button class="btn plain" id="backupNow" data-t="backupNow">Back up now</button></div>
+  </section>
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
@@ -447,6 +585,23 @@ const I18N = {
     inVram: 'In VRAM: ', of: 'of', noModel: 'No model loaded in VRAM.', noActivity: 'No activity.',
     cMemory: 'Long-term memory', emptyMemory: '(empty)', cInv: 'Inventory', emptyInv: 'Empty', reflexes: 'Recent reflexes', noneParen: '(nothing)',
     cLog: 'Log',
+    qFollow: 'Follow me', qCome: 'Come here', qWood: 'Collect wood', qStop: 'Stop', sent: 'Sent',
+    cBots: 'Bots', newBotPh: 'Name', personality: 'Personality', add: 'Add', remove: 'Remove',
+    pers: { explorer: 'Explorer', builder: 'Builder', quiet: 'Quiet', funny: 'Funny' },
+    inGame: 'in the world', notInGame: 'not in the world',
+    reliability: 'Reliability', autoRestart: 'Restart the bot if it crashes', restarts: 'Automatic restarts',
+    botsNote: 'Changes restart the bot. Up to 4 bots; they share one model, so each extra bot makes replies slower.',
+    badName: 'Names use 3-16 letters, numbers or _', dupName: 'That name is already in use', maxBots: 'Up to 4 bots',
+    cModel: 'Model', inUse: 'In use', use: 'Use', measure: 'Measure', measuring: 'Measuring…', notMeasured: 'not measured',
+    live: (n) => `from ${n} replies`, bench: 'benchmark', noModels: 'No models installed in models\\ollama.',
+    modelNote: "Speed comes from the bot's real replies, or from Measure (one short fixed prompt). Changing the model restarts the bot.",
+    cWorld: 'World & connection', thisPc: 'This PC', otherServer: 'Another server', host: 'Address', port: 'Port',
+    account: 'Bot account', authOffline: 'Offline (no account)', authMs: 'Microsoft account', version: 'Version', save: 'Save',
+    localNote: 'The bots join the Paper server bundled with this install (port 25565).',
+    extNote: "Offline accounts only work on servers with online-mode=false. With a Microsoft account each bot needs its own Minecraft license. Realms isn't supported.",
+    msCode: (c) => `Sign the bot in: open <u>microsoft.com/link</u> and enter <b>${c}</b>`,
+    backups: 'Backups', autoBackup: 'Automatic backup', off: 'Off', lastBackup: 'Last backup', never: 'Never', backupNow: 'Back up now',
+    backupExt: 'Only for the bundled local server',
   },
   es: {
     skinAlt: 'Skin de Claude', noBot: 'Sin conexión con el bot', botOff: 'Bot apagado', reconnecting: 'Reconectando con el panel…',
@@ -470,6 +625,23 @@ const I18N = {
     inVram: 'En VRAM: ', of: 'de', noModel: 'Ningún modelo cargado en VRAM.', noActivity: 'Sin actividad.',
     cMemory: 'Memoria a largo plazo', emptyMemory: '(vacía)', cInv: 'Inventario', emptyInv: 'Vacío', reflexes: 'Reflejos recientes', noneParen: '(nada)',
     cLog: 'Registro',
+    qFollow: 'Sígueme', qCome: 'Ven aquí', qWood: 'Recoge madera', qStop: 'Para', sent: 'Enviado',
+    cBots: 'Bots', newBotPh: 'Nombre', personality: 'Personalidad', add: 'Añadir', remove: 'Quitar',
+    pers: { explorer: 'Explorador', builder: 'Constructor', quiet: 'Callado', funny: 'Gracioso' },
+    inGame: 'en el mundo', notInGame: 'fuera del mundo',
+    reliability: 'Fiabilidad', autoRestart: 'Reiniciar el bot si se cae', restarts: 'Reinicios automáticos',
+    botsNote: 'Los cambios reinician el bot. Hasta 4 bots; comparten modelo, así que cada bot extra hace las respuestas más lentas.',
+    badName: 'Nombres de 3-16 letras, números o _', dupName: 'Ese nombre ya existe', maxBots: 'Máximo 4 bots',
+    cModel: 'Modelo', inUse: 'En uso', use: 'Usar', measure: 'Medir', measuring: 'Midiendo…', notMeasured: 'sin medir',
+    live: (n) => `de ${n} respuestas`, bench: 'prueba', noModels: 'No hay modelos instalados en models\\ollama.',
+    modelNote: 'La velocidad sale de las respuestas reales del bot, o de Medir (un prompt corto fijo). Cambiar de modelo reinicia el bot.',
+    cWorld: 'Mundo y conexión', thisPc: 'Este PC', otherServer: 'Otro servidor', host: 'Dirección', port: 'Puerto',
+    account: 'Cuenta del bot', authOffline: 'Offline (sin cuenta)', authMs: 'Cuenta Microsoft', version: 'Versión', save: 'Guardar',
+    localNote: 'Los bots entran al servidor Paper incluido en esta instalación (puerto 25565).',
+    extNote: 'Las cuentas offline solo valen en servidores con online-mode=false. Con cuenta Microsoft cada bot necesita su propia licencia de Minecraft. Realms no está soportado.',
+    msCode: (c) => `Inicia sesión con el bot: abre <u>microsoft.com/link</u> e introduce <b>${c}</b>`,
+    backups: 'Copias de seguridad', autoBackup: 'Copia automática', off: 'No', lastBackup: 'Última copia', never: 'Nunca', backupNow: 'Copiar ahora',
+    backupExt: 'Solo para el servidor local incluido',
   },
 };
 const T = I18N[document.documentElement.lang] || I18N.en;
@@ -489,16 +661,22 @@ img.onload = () => { const c = $('head').getContext('2d'); c.drawImage(img, 8, 8
 img.src = '/skin.png';
 
 let status = {};
+let states = {};                         // ultimo estado de cada bot, por nombre
+let cfg = null;                          // /api/config: bots, personalidades, destino, modelos, preferencias
+let sel = localStorage.getItem('bot') || '';
+let benching = null;
+const post = (name, body = {}) => fetch('/api/' + name, { method: 'POST', body: JSON.stringify(body) }).then((r) => r.json());
 
 function toast(t) {
   const e = $('toast'); e.textContent = t; e.classList.add('show');
   clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('show'), 4500);
 }
 
-async function act(name) {
-  try { const r = await fetch('/api/' + name, { method: 'POST' }); toast((await r.json()).msg); }
+async function act(name, body) {
+  try { const r = await post(name, body); if (r.msg) toast(r.msg); if (r.config) renderConfig(r.config); return r; }
   catch (e) { toast('Error: ' + e.message); }
 }
+const loadConfig = () => fetch('/api/config').then((r) => r.json()).then(renderConfig).catch(() => {});
 
 function confirmStop() {
   return new Promise((resolve) => {
@@ -523,10 +701,128 @@ $('chat').onsubmit = async (e) => {
   const message = $('chatIn').value.trim(); if (!message) return;
   $('chatIn').value = ''; $('sendBtn').disabled = true;
   try {
-    const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message }) });
-    if (!(await r.json()).ok) toast(T.botNotConnected);
+    if (!(await post('chat', { agent: sel, message })).ok) toast(T.botNotConnected);
   } catch { toast(T.noPanel); }
 };
+
+// Comandos rapidos: van directos a Mindcraft como !comando, sin pasar por el LLM.
+document.querySelectorAll('.chip').forEach((b) => {
+  b.onclick = async () => {
+    try {
+      const r = await post('command', { agent: sel, cmd: b.dataset.cmd });
+      toast(r.msg || (r.ok ? `${T.sent}: ${r.sent}` : T.botNotConnected));
+    } catch { toast(T.noPanel); }
+  };
+});
+
+// ---------- Bots ----------
+const PERS = (k) => T.pers[k] || k;
+const persOptions = (cur) => (cfg?.personalities || []).map((p) => `<option value="${esc(p)}"${p === cur ? ' selected' : ''}>${esc(PERS(p))}</option>`).join('');
+const saveBots = (bots) => act('bots', { bots });
+function renderBots() {
+  const bots = cfg.bots, live = Object.fromEntries((status.bots || []).map((b) => [b.name, b.inGame]));
+  $('botsList').innerHTML = bots.map((b, i) => `<div class="ctl">
+      <span style="text-align:left"><b style="color:var(--label);font-weight:600">${esc(b.name)}</b><br><small class="muted">${live[b.name] ? T.inGame : T.notInGame}</small></span>
+      <span style="display:flex;gap:.35rem;align-items:center">
+        <select class="field" data-i="${i}" aria-label="${T.personality}">${persOptions(b.personality)}</select>
+        <button class="icon-btn" data-rm="${i}" aria-label="${T.remove} ${esc(b.name)}" ${bots.length < 2 ? 'disabled' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </span></div>`).join('');
+  $('botsList').querySelectorAll('select').forEach((s) => {
+    s.onchange = () => saveBots(bots.map((b, i) => i === +s.dataset.i ? { ...b, personality: s.value } : b));
+  });
+  $('botsList').querySelectorAll('[data-rm]').forEach((x) => { x.onclick = () => saveBots(bots.filter((_, i) => i !== +x.dataset.rm)); });
+  if (!$('newPers').options.length) $('newPers').innerHTML = persOptions(cfg.personalities[0]);
+  $('addBtn').disabled = bots.length >= 4;
+}
+$('addBot').onsubmit = (e) => {
+  e.preventDefault();
+  const name = $('newBot').value.trim();
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return toast(T.badName);
+  if (cfg.bots.some((b) => b.name.toLowerCase() === name.toLowerCase())) return toast(T.dupName);
+  if (cfg.bots.length >= 4) return toast(T.maxBots);
+  $('newBot').value = '';
+  saveBots([...cfg.bots, { name, personality: $('newPers').value }]);
+};
+$('autoRestart').onchange = () => act('prefs', { autoRestart: $('autoRestart').checked });
+
+// ---------- Modelo ----------
+function renderModels() {
+  const list = cfg.models;
+  $('modelsList').innerHTML = list.length ? list.map((m) => {
+    const s = m.speed, cur = m.name === cfg.model;
+    const speed = s ? `${s.gen} tok/s · ${s.source === 'live' ? T.live(s.n) : T.bench}` : T.notMeasured;
+    return `<div class="model-row">
+      <span class="nm">${esc(m.name)}${cur ? `<span class="tag">${T.inUse}</span>` : ''}</span>
+      <span class="btns">
+        <button class="btn plain" data-bench="${esc(m.name)}" ${benching ? 'disabled' : ''}>${benching === m.name ? T.measuring : T.measure}</button>
+        ${cur ? '' : `<button class="btn go" data-use="${esc(m.name)}">${T.use}</button>`}
+      </span>
+      <span class="meta num">${gb(m.size)} · ${speed}</span></div>`;
+  }).join('') : `<div><span class="muted">${T.noModels}</span></div>`;
+  $('modelsList').querySelectorAll('[data-use]').forEach((b) => { b.onclick = () => act('model', { name: b.dataset.use }); });
+  $('modelsList').querySelectorAll('[data-bench]').forEach((b) => {
+    b.onclick = async () => { benching = b.dataset.bench; renderModels(); await act('model/bench', { name: benching }); benching = null; loadConfig(); };
+  });
+}
+
+// ---------- Mundo y conexion ----------
+let tgtMode = 'local';
+function setMode(mode) {
+  tgtMode = mode;
+  $('tgtMode').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  $('extFields').hidden = mode === 'local';
+  $('tgtNote').textContent = mode === 'local' ? T.localNote : T.extNote;
+}
+$('tgtMode').querySelectorAll('button').forEach((b) => { b.onclick = () => setMode(b.dataset.mode); });
+function renderTarget() {
+  const t = cfg.target;
+  setMode(t.local ? 'local' : 'external');
+  $('tHost').value = t.local ? '' : t.host; $('tPort').value = t.port; $('tAuth').value = t.auth;
+  $('tVersion').value = t.local ? 'auto' : t.version;
+  $('backupHours').value = String(cfg.prefs.backupHours);
+  $('backupHours').disabled = $('backupNow').disabled = !t.local;
+  $('autoRestart').checked = cfg.prefs.autoRestart;
+}
+$('targetForm').onsubmit = (e) => {
+  e.preventDefault();
+  act('target', tgtMode === 'local'
+    ? { host: '127.0.0.1', port: 25565, auth: 'offline', version: '1.21.6' }
+    : { host: $('tHost').value.trim(), port: +$('tPort').value, auth: $('tAuth').value, version: $('tVersion').value.trim() || 'auto' });
+};
+$('backupHours').onchange = () => act('prefs', { backupHours: +$('backupHours').value });
+$('backupNow').onclick = () => act('backup');
+
+function renderConfig(c) {
+  if (!c) return;
+  cfg = c;
+  renderBots(); renderModels(); renderTarget();
+}
+
+// ---------- Bot seleccionado ----------
+function selectBot(name) {
+  sel = name; localStorage.setItem('bot', name);
+  $('botName').textContent = name; document.title = `${name} · IAMine`;
+  // La skin incluida es la de Claude; el resto lleva la inicial.
+  $('letter').hidden = name === 'Claude'; $('letter').textContent = name.slice(0, 1).toUpperCase();
+  WHO.assistant = name;
+  $('chatIn').placeholder = T.chatPh.replace('Claude', name);
+  $('botSel').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.bot === name));
+  shownTurns = [];
+  renderState();
+}
+function renderBotSelector() {
+  const names = (status.bots || []).map((b) => b.name);
+  if (!names.length) return;
+  const key = names.join('|');
+  if ($('botSel').dataset.key !== key) {
+    $('botSel').dataset.key = key;
+    $('botSel').innerHTML = names.map((n) => `<button type="button" data-bot="${esc(n)}">${esc(n)}</button>`).join('');
+    $('botSel').querySelectorAll('button').forEach((b) => { b.onclick = () => selectBot(b.dataset.bot); });
+    $('botSel').hidden = names.length < 2;
+    if (cfg && cfg.bots.map((b) => b.name).join('|') !== key) loadConfig();
+    selectBot(names.includes(sel) ? sel : names[0]);
+  } else if (!names.includes(sel)) selectBot(names[0]);
+}
 
 function setButton(key, state) {
   const b = $('b-' + key);
@@ -553,6 +849,18 @@ function renderStatus(s) {
     ? T.inVram + status.models.map((m) => `${m.name} (${gb(m.vram)} ${T.of} ${gb(m.size)}${m.ctx ? ', ctx ' + m.ctx : ''})`).join(' · ')
     : T.noModel;
   if (!status.bot || status.bot === 'off') $('activity').textContent = T.botOff;
+  renderBotSelector();
+  const botIn = (status.bots || []).find((b) => b.name === sel)?.inGame;
+  document.querySelectorAll('.chip').forEach((c) => { c.disabled = !botIn; });
+  $('restarts').textContent = status.restarts || 0;
+  $('msCode').hidden = !status.msCode;
+  if (status.msCode) $('msCode').innerHTML = T.msCode(esc(status.msCode));
+  $('lastBackup').textContent = status.target && !status.target.local ? T.backupExt
+    : status.lastBackup ? new Date(status.lastBackup).toLocaleString() : T.never;
+  if (cfg) {
+    const live = (status.bots || []).map((b) => b.inGame).join();
+    if (renderStatus.live !== live) { renderStatus.live = live; renderBots(); }
+  }
 }
 
 const GROUPS = {
@@ -621,7 +929,8 @@ function renderLlm(calls) {
     + `<circle cx="${lx}" cy="${ly}" r="3.5" fill="#64d2ff" stroke="#1c1c1e" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
 }
 
-function renderState(st) {
+function renderState() {
+  const st = states[sel];
   if (!st || st.error) { $('activity').textContent = status.bot === 'starting' ? T.starting : T.noBot; return; }
   const g = st.gameplay, mind = st.mind || {};
   $('activity').textContent = st.action.current;
@@ -655,10 +964,10 @@ function addEvent(e) {
 const es = new EventSource('/events');
 es.onmessage = (ev) => {
   const { type, data } = JSON.parse(ev.data);
-  if (type === 'init') { renderStatus(data.status); renderMetrics(data.metrics); renderState(data.state); (data.events || []).forEach(addEvent); }
+  if (type === 'init') { states = data.states || {}; renderStatus(data.status); renderMetrics(data.metrics); renderState(); (data.events || []).forEach(addEvent); loadConfig(); }
   else if (type === 'status') renderStatus(data);
   else if (type === 'metrics') renderMetrics(data);
-  else if (type === 'state') renderState(data);
+  else if (type === 'state') { states = data || {}; renderState(); }
   else if (type === 'event') addEvent(data);
 };
 es.onerror = () => { $('activity').textContent = T.reconnecting; };
