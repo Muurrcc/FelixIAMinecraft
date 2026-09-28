@@ -57,7 +57,9 @@ jobs:
         shell: bash
         run: |
           for f in *.bat; do
-            if grep -q $'[^\r]$' "$f"; then echo "::error file=$f::LF line endings (cmd.exe needs CRLF)"; exit 1; fi
+            # Byte check in node: Git Bash's grep drops the CR before matching.
+            node -e "process.exit(/(^|[^\r])\n/.test(require('fs').readFileSync(process.argv[1], 'latin1')) ? 1 : 0)" "$f" \
+              || { echo "::error file=$f::LF line endings (cmd.exe needs CRLF)"; exit 1; }
           done
 
   downloads:
