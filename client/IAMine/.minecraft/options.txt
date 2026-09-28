@@ -1,0 +1,2 @@
+renderDistance:10
+maxFps:90

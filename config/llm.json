@@ -1,0 +1,12 @@
+{
+  "_comment": "Single source of truth for the bot's LLM. scripts/start_all.ps1 copies it into mindcraft/profiles/claude_bot.json on every start. To use Ollama on another machine (e.g. a Mac), set backend to \"remote\" and url to http://<that-ip>:11434.",
+  "backend": "local",
+  "url": "http://127.0.0.1:11434",
+  "chat_model": "ollama/sweaterdog/andy-4",
+  "chat_model_fallback": "ollama/sweaterdog/andy-4:q5_k_m",
+  "embedding_model": "ollama/embeddinggemma:300m",
+  "embedding_num_gpu": 0,
+  "context_length": 8192,
+  "request_timeout_ms": 20000,
+  "request_retries": 2
+}

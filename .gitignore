@@ -1,0 +1,30 @@
+# Created by scripts/install.ps1 or at runtime — never commit
+/runtime/
+/models/
+/cache/
+/server/
+/logs/
+/run/
+/backups/
+/data/
+node_modules/
+
+# Client binaries (downloaded by the installer)
+/client/IAMine/.minecraft/*
+!/client/IAMine/.minecraft/options.txt
+!/client/IAMine/.minecraft/servers.dat
+
+# Bot state and secrets
+/mindcraft/keys.json
+/mindcraft/bots/*/
+!/mindcraft/bots/*.js
+/mindcraft/code_records/
+/mindcraft/tmp/
+/tests/resultados/
+
+# Editors / OS
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db

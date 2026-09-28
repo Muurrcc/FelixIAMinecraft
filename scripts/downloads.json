@@ -1,0 +1,92 @@
+{
+  "runtimes": [
+    {
+      "name": "node",
+      "file": "node-v20.20.2-win-x64.zip",
+      "url": "https://nodejs.org/dist/v20.20.2/node-v20.20.2-win-x64.zip",
+      "sha256": "dc3700fdd57a63eedb8fd7e3c7baaa32e6a740a1b904167ff4204bc68ed8bf77",
+      "dest": "runtime/node",
+      "check": "node.exe"
+    },
+    {
+      "name": "java",
+      "file": "OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.zip",
+      "url": "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/OpenJDK21U-jdk_x64_windows_hotspot_21.0.12.1_1.zip",
+      "sha256": "f9d6e191ab098c0d416e7d588a24420a8621cd2f4720dab2459b8b7b2d2d8b4e",
+      "dest": "runtime/java",
+      "check": "bin/java.exe"
+    },
+    {
+      "name": "ollama",
+      "file": "ollama-windows-amd64.zip",
+      "url": "https://github.com/ollama/ollama/releases/download/v0.34.4/ollama-windows-amd64.zip",
+      "sha256": "535193f38f3344e5b08f5d1c171c31ce11aa17f0124ff69ae26d8ec7fe06fa62",
+      "dest": "runtime/ollama",
+      "check": "ollama.exe"
+    }
+  ],
+  "ollama_rocm": {
+    "file": "ollama-windows-amd64-rocm.zip",
+    "url": "https://github.com/ollama/ollama/releases/download/v0.34.4/ollama-windows-amd64-rocm.zip",
+    "sha256": "73b02b93f4d9335e29c467e54004fcd340db6efc0fb7f50dfef17597327c616b"
+  },
+  "paper": {
+    "file": "paper-1.21.6-48.jar",
+    "url": "https://fill-data.papermc.io/v1/objects/35e2dfa66b3491b9d2f0bb033679fa5aca1e1fdf097e7a06a80ce8afeda5c214/paper-1.21.6-48.jar",
+    "sha256": "35e2dfa66b3491b9d2f0bb033679fa5aca1e1fdf097e7a06a80ce8afeda5c214"
+  },
+  "plugins": [
+    {
+      "file": "SkinsRestorer.jar",
+      "url": "https://cdn.modrinth.com/data/TsLS8Py5/versions/ziIzW16f/SkinsRestorer.jar",
+      "sha512": "0ec5070bff7db5098d3fe04b53e6bcd59d74806184b3599ada48ce5576ff4346eece020a3106ba84bdfb703bd138da6d232b7cabf625394291f7728b8dc04497"
+    }
+  ],
+  "mods": [
+    {
+      "file": "fabric-api-0.128.2+1.21.6.jar",
+      "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/F5TVHWcE/fabric-api-0.128.2%2B1.21.6.jar",
+      "sha512": "b6d0ec0aec40069cb1fa2159c126d027d7f95e3f6260a3e88ebe9c47f3cb716d1170af8e2e4ff3d4108ce5eeaea70002a889547578374d4d6dfa45755e99431e"
+    },
+    {
+      "file": "sodium-fabric-0.6.13+mc1.21.6.jar",
+      "url": "https://cdn.modrinth.com/data/AANobbMI/versions/ND4ROcMQ/sodium-fabric-0.6.13%2Bmc1.21.6.jar",
+      "sha512": "ee97e3df07a6f734bc8a0f77c1f1de7f47bed09cf682f048ceb12675c51b70ba727b11fcacbb7b10cc9f79b283dd71a39751312b5c70568aa3ac9471407174db"
+    },
+    {
+      "file": "lithium-fabric-0.17.0+mc1.21.6.jar",
+      "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/XWGBHYcB/lithium-fabric-0.17.0%2Bmc1.21.6.jar",
+      "sha512": "a8d6a8b69ae2b10dd0cf8f8149260d5bdbd2583147462bad03380014edd857852972b967d97df69728333d8836b1e9db8997712ea26365ddb8a05b8c845c6534"
+    },
+    {
+      "file": "ferritecore-8.0.4-fabric.jar",
+      "url": "https://cdn.modrinth.com/data/uXXizFIs/versions/LdlksamY/ferritecore-8.0.4-fabric.jar",
+      "sha512": "8be6c49aa5900f434c082f505a48cf6bafc70bb43e9b9d4e0e42524605d2d22f968bc3a0c0048190a5296fd3cc696d8c3a7329dc8a022792f920e83ece47e5b6"
+    },
+    {
+      "file": "ImmediatelyFast-Fabric-1.10.3+1.21.6.jar",
+      "url": "https://cdn.modrinth.com/data/5ZwdcRci/versions/9JPEk4KN/ImmediatelyFast-Fabric-1.10.3%2B1.21.6.jar",
+      "sha512": "5ce151a063a5c95b1192cb98af6e6281b463c64dc3ce0f5eeeced1b7f8cc856b54ec5fba965ba71c54d3e9aca175b77406d101b19ef61ad6373884d0beec0996"
+    },
+    {
+      "file": "entityculling-fabric-1.8.2-mc1.21.6.jar",
+      "url": "https://cdn.modrinth.com/data/NNAgCjsB/versions/5wVZFo2d/entityculling-fabric-1.8.2-mc1.21.6.jar",
+      "sha512": "528236d3d68ab4338dd0e1b3016a2381c6f341fb2b0854f93013c968710d9263f118a226abf422a6f43bb9ff7252833abf228f82dc47a099d83cf7848c55b9a7"
+    },
+    {
+      "file": "dynamic-fps-3.11.4+minecraft-1.21.6-fabric.jar",
+      "url": "https://cdn.modrinth.com/data/LQ3K71Q1/versions/OnRerL4D/dynamic-fps-3.11.4%2Bminecraft-1.21.6-fabric.jar",
+      "sha512": "8cc72dd6088c8f4ed5f2808b619ac1ec6bd64e1ae1c511215f7be5b1b217753a3aed4163f33c133faa5ac29cb0e10a525aa9840116a967149f37401508f298d0"
+    },
+    {
+      "file": "BadOptimizations-2.4.1-1.21.6-21.8.jar",
+      "url": "https://cdn.modrinth.com/data/g96Z4WVZ/versions/9s4ZpGFq/BadOptimizations-2.4.1-1.21.6-21.8.jar",
+      "sha512": "74b460bb0792e00b5da906f17dba004232268074800c20fd1f365a3550723b9966c068eb66549b1cf74934ab3a84ae31a1b8f1359d3e41d2e179f577dda679a9"
+    },
+    {
+      "file": "voxy-0.2.4-alpha.jar",
+      "url": "https://cdn.modrinth.com/data/fxxUqruK/versions/PUzawk52/voxy-0.2.4-alpha.jar",
+      "sha512": "da415daf450f76f021e371a6a5c898c343413d6f0a09c415d66637c68861546210c320040410884101a6d68d528e2c24bc0b802ae7aae12c28c706c4e1e3bfa2"
+    }
+  ]
+}

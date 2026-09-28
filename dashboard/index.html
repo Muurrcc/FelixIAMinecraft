@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Claude · IAMine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<style>
+  :root {
+    --bg: #000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --surface-3: #3a3a3c;
+    --sep: rgba(84, 84, 88, .45);
+    --label: #f5f5f7;
+    --label-2: rgba(235, 235, 245, .6);
+    --label-3: rgba(235, 235, 245, .32);
+    --tint: #d97757;
+    --green: #30d158;
+    --yellow: #ffd60a;
+    --orange: #ff9f0a;
+    --red: #ff453a;
+    --blue: #0a84ff;
+    --purple: #bf5af2;
+    --teal: #64d2ff;
+    --radius: 20px;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100dvh; color: var(--label); background: var(--bg);
+    font: 0.875rem/1.45 var(--font); letter-spacing: -0.006em;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+    background-image:
+      radial-gradient(60rem 30rem at 12% -8%, rgba(217, 119, 87, .20), transparent 60%),
+      radial-gradient(50rem 26rem at 95% -10%, rgba(10, 132, 255, .12), transparent 60%);
+    background-attachment: fixed;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ── Header: material translucido, el contenido pasa por debajo ── */
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: max(.9rem, env(safe-area-inset-top)) 1.5rem .9rem;
+    background: rgba(18, 18, 20, .62);
+    backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-bottom: .5px solid var(--sep);
+  }
+  .avatar { position: relative; width: 56px; height: 56px; flex: none; }
+  #head { width: 100%; height: 100%; image-rendering: pixelated; border-radius: 14px; background: var(--surface-2); display: block; }
+  .avatar::after {
+    content: ""; position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--label-3); border: 3px solid #121214; transition: background-color 300ms ease;
+  }
+  .avatar[data-state="on"]::after { background: var(--green); }
+  .avatar[data-state="starting"]::after { background: var(--yellow); }
+  .who-box { min-width: 0; flex: 1 1 14rem; }
+  h1 { margin: 0; font: 700 1.75rem/1.1 var(--font-display); letter-spacing: -0.022em; }
+  .sub { color: var(--label-2); font-size: .8125rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .services { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .svc {
+    display: flex; align-items: center; gap: .6rem; padding: .4rem .45rem .4rem .8rem;
+    background: rgba(118, 118, 128, .16); border-radius: 999px; min-height: 2.5rem;
+  }
+  .svc.bare { padding-right: .9rem; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--label-3); flex: none; transition: background-color 300ms ease, box-shadow 300ms ease; }
+  .svc[data-state="on"] .dot { background: var(--green); box-shadow: 0 0 0 3px rgba(48, 209, 88, .18); }
+  .svc[data-state="starting"] .dot { background: var(--yellow); box-shadow: 0 0 0 3px rgba(255, 214, 10, .18); }
+  .svc-name { font-weight: 600; font-size: .8125rem; line-height: 1.1; }
+  .svc-state { color: var(--label-2); font-size: .6875rem; line-height: 1.2; letter-spacing: .01em; }
+
+  /* ── Botones: feedback al presionar, instantaneo ── */
+  .btn {
+    appearance: none; border: 0; font: 600 .8125rem/1 var(--font); letter-spacing: -0.005em;
+    padding: .55rem .95rem; border-radius: 999px; cursor: pointer; color: #fff; background: var(--surface-3);
+    touch-action: manipulation; user-select: none;
+    transition: transform 160ms var(--ease-out), background-color 200ms ease, opacity 200ms ease;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.96); transition-duration: 80ms; }
+  .btn.go { background: var(--tint); }
+  .btn.stop { background: rgba(255, 69, 58, .16); color: #ff6961; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (hover: hover) and (pointer: fine) {
+    .btn.go:hover:not(:disabled) { background: #e2876a; }
+    .btn.stop:hover:not(:disabled) { background: rgba(255, 69, 58, .24); }
+    .btn.plain:hover:not(:disabled) { background: #48484a; }
+  }
+
+  /* ── Rejilla ── */
+  main { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; padding: 1.25rem 1.5rem max(2rem, env(safe-area-inset-bottom)); max-width: 1600px; margin: 0 auto; }
+  .card {
+    background: var(--surface); border-radius: var(--radius); padding: 1.1rem 1.2rem 1.2rem; min-width: 0;
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .06), 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .22);
+    animation: rise 420ms var(--ease-out) both;
+  }
+  .card:nth-child(2) { animation-delay: 40ms; } .card:nth-child(3) { animation-delay: 80ms; }
+  .card:nth-child(4) { animation-delay: 120ms; } .card:nth-child(5) { animation-delay: 160ms; }
+  .card:nth-child(6) { animation-delay: 200ms; } .card:nth-child(7) { animation-delay: 240ms; } .card:nth-child(8) { animation-delay: 280ms; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c7 { grid-column: span 7; }
+  @media (max-width: 1180px) { .c4 { grid-column: span 6; } .c5, .c7 { grid-column: span 12; } }
+  @media (max-width: 760px) {
+    .c4 { grid-column: span 12; } main { padding-inline: 1rem; } header { padding-inline: 1rem; }
+    .services { flex: 1 1 100%; } .svc { flex: 1 1 auto; } .svc > div { flex: 1; }
+    .stat .v { font-size: 1.375rem; }
+  }
+
+  .card-h { display: flex; align-items: center; gap: .5rem; margin: 0 0 .9rem; }
+  .card-h svg { width: 18px; height: 18px; flex: none; }
+  h2 { margin: 0; font: 600 1rem/1.2 var(--font-display); letter-spacing: -0.012em; }
+  h3 { margin: 1.1rem 0 .5rem; font-size: .75rem; font-weight: 600; color: var(--label-2); letter-spacing: .02em; }
+  .muted { color: var(--label-2); }
+  .note { color: var(--label-2); font-size: .75rem; margin-top: .6rem; line-height: 1.4; }
+
+  /* ── Listas agrupadas estilo iOS ── */
+  .list { background: var(--surface-2); border-radius: 12px; padding: 0 .85rem; }
+  .list > div { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; border-bottom: .5px solid var(--sep); font-size: .8125rem; }
+  .list > div:last-child { border-bottom: 0; }
+  .list b { color: var(--label-2); font-weight: 400; flex: none; }
+  .list span { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+
+  /* ── Anillos (salud/hambre) ── */
+  .vitals { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1rem; }
+  .ring { position: relative; width: 84px; height: 84px; flex: none; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 9; stroke-linecap: round; }
+  .ring .track { stroke: rgba(255, 255, 255, .08); }
+  .ring .val { stroke-dasharray: 213.6; stroke-dashoffset: 213.6; transition: stroke-dashoffset 700ms var(--ease-out); }
+  .ring .in { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .ring .in b { font: 700 1.25rem/1 var(--font-display); letter-spacing: -0.02em; }
+  .ring .in small { font-size: .625rem; color: var(--label-2); letter-spacing: .02em; margin-top: 2px; }
+  .vit-legend { display: grid; gap: .35rem; font-size: .8125rem; }
+  .vit-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem; }
+
+  /* ── Objetivo ── */
+  .goal { font: 600 1.125rem/1.35 var(--font-display); letter-spacing: -0.014em; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .goal.empty { color: var(--label-3); font-weight: 500; }
+  .badge { display: inline-flex; align-items: center; gap: .35rem; margin-top: .7rem; padding: .25rem .6rem; border-radius: 999px; font-size: .6875rem; font-weight: 600; background: rgba(118, 118, 128, .2); color: var(--label-2); }
+  .badge[data-s="active"] { background: rgba(48, 209, 88, .15); color: var(--green); }
+  .badge[data-s="paused"] { background: rgba(255, 159, 10, .15); color: var(--orange); }
+  .badge:empty { display: none; }
+
+  /* ── LLM ── */
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+  .stat { background: var(--surface-2); border-radius: 12px; padding: .65rem .75rem; }
+  .stat .k { font-size: .6875rem; color: var(--label-2); }
+  .stat .v { font: 700 1.625rem/1.1 var(--font-display); letter-spacing: -0.025em; margin-top: .2rem; }
+  .stat .u { font-size: .6875rem; color: var(--label-3); }
+  .spark { width: 100%; height: 76px; display: block; margin: .8rem 0 .7rem; overflow: visible; }
+  .m4 { margin-top: .75rem; padding: .7rem .8rem; border-radius: 12px; background: linear-gradient(135deg, rgba(10, 132, 255, .12), rgba(191, 90, 242, .10)); font-size: .75rem; color: var(--label-2); line-height: 1.45; }
+  .m4 b { color: var(--label); font-weight: 600; }
+
+  /* ── Conversacion estilo Mensajes ── */
+  .feed {
+    height: 30rem; overflow: auto; display: flex; flex-direction: column; gap: .45rem; padding: .25rem .1rem .5rem;
+    overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 10px), transparent 100%);
+  }
+  .feed > :first-child { margin-top: auto; }
+  .msg {
+    max-width: 85%; padding: .5rem .8rem; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8125rem;
+    transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out);
+  }
+  @starting-style { .msg { opacity: 0; transform: translateY(6px) scale(.98); } }
+  .msg .who { display: block; font-size: .625rem; font-weight: 600; letter-spacing: .02em; opacity: .7; margin-bottom: .1rem; }
+  .msg.assistant { align-self: flex-start; background: var(--surface-3); border-bottom-left-radius: 6px; transform-origin: left bottom; }
+  .msg.user { align-self: flex-end; background: var(--blue); color: #fff; border-bottom-right-radius: 6px; transform-origin: right bottom; }
+  .msg.system { align-self: stretch; max-width: none; background: transparent; color: var(--label-2); font: .6875rem/1.45 var(--mono); padding: .35rem .6rem; border-left: 2px solid var(--surface-3); border-radius: 0; }
+  code.cmd { font: 600 .75rem var(--mono); color: #ffb38f; background: rgba(217, 119, 87, .14); padding: .05rem .3rem; border-radius: 5px; }
+  .msg.user code.cmd { color: #fff; background: rgba(255, 255, 255, .2); }
+  .empty-state { margin: auto; text-align: center; color: var(--label-3); font-size: .8125rem; }
+
+  .composer { display: flex; gap: .5rem; margin-top: .75rem; align-items: center; }
+  .composer input {
+    flex: 1; min-width: 0; background: var(--surface-2); border: .5px solid var(--sep); color: var(--label);
+    padding: .6rem 1rem; border-radius: 999px; font: inherit; font-size: max(16px, .875rem);
+    transition: border-color 200ms ease;
+  }
+  .composer input::placeholder { color: var(--label-3); }
+  .send {
+    width: 2.25rem; height: 2.25rem; flex: none; border-radius: 50%; border: 0; background: var(--blue); color: #fff; cursor: pointer;
+    display: grid; place-items: center; transition: transform 160ms var(--ease-out), opacity 200ms ease;
+  }
+  .send:active:not(:disabled) { transform: scale(0.92); transition-duration: 80ms; }
+  .send:disabled { opacity: .35; cursor: default; }
+  .send svg { width: 16px; height: 16px; }
+
+  /* ── Consumos ── */
+  .meter { margin-bottom: .8rem; }
+  .meter-top { display: flex; justify-content: space-between; font-size: .8125rem; margin-bottom: .35rem; }
+  .meter-top span:last-child { color: var(--label-2); }
+  .track { height: 6px; border-radius: 99px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: inherit; transform: scaleX(0); transform-origin: left; transition: transform 700ms var(--ease-out), background-color 300ms ease; }
+  .procs { margin-top: 1rem; }
+  .procs .row { display: grid; grid-template-columns: 1fr 4.5rem 4.5rem; gap: .5rem; padding: .5rem 0; border-bottom: .5px solid var(--sep); font-size: .8125rem; }
+  .procs .row:last-child { border-bottom: 0; }
+  .procs .row span:not(:first-child) { text-align: right; }
+  .procs .hd { color: var(--label-3); font-size: .6875rem; padding-top: 0; }
+  .pdot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: .5rem; }
+
+  /* ── Texto monoespaciado ── */
+  pre {
+    margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: .6875rem/1.55 var(--mono); color: var(--label-2);
+    max-height: 16rem; overflow: auto; scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent;
+  }
+  .well { background: var(--surface-2); border-radius: 12px; padding: .7rem .8rem; }
+  .inv { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .inv span { background: var(--surface-2); padding: .3rem .6rem; border-radius: 8px; font-size: .75rem; }
+  .inv span b { color: var(--label-2); font-weight: 500; margin-left: .3rem; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; left: 50%; bottom: max(1.5rem, env(safe-area-inset-bottom)); z-index: 30;
+    max-width: min(28rem, calc(100vw - 2rem)); padding: .7rem 1.1rem; border-radius: 999px;
+    background: rgba(44, 44, 46, .78); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .12), 0 10px 30px rgba(0, 0, 0, .45);
+    font-size: .8125rem; font-weight: 500; text-align: center;
+    opacity: 0; transform: translate(-50%, 12px) scale(.96); pointer-events: none;
+    transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  /* ── Hoja de confirmacion ── */
+  dialog {
+    border: 0; padding: 0; border-radius: 16px; width: min(20rem, calc(100vw - 2rem)); color: var(--label);
+    background: rgba(44, 44, 46, .86); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .55); text-align: center;
+    opacity: 0; transform: scale(.96); transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out), overlay 200ms allow-discrete, display 200ms allow-discrete;
+  }
+  dialog[open] { opacity: 1; transform: scale(1); }
+  @starting-style { dialog[open] { opacity: 0; transform: scale(.96); } }
+  dialog::backdrop { background: rgba(0, 0, 0, .45); transition: background-color 200ms ease, overlay 200ms allow-discrete, display 200ms allow-discrete; }
+  @starting-style { dialog[open]::backdrop { background: rgba(0, 0, 0, 0); } }
+  dialog .body { padding: 1.2rem 1.2rem 1rem; }
+  dialog h4 { margin: 0 0 .3rem; font: 600 1.0625rem/1.25 var(--font-display); letter-spacing: -0.012em; }
+  dialog p { margin: 0; font-size: .8125rem; color: var(--label-2); }
+  dialog .acts { display: grid; grid-template-columns: 1fr 1fr; border-top: .5px solid var(--sep); }
+  dialog .acts button { appearance: none; border: 0; background: none; color: var(--blue); font: 400 1rem var(--font); padding: .8rem; cursor: pointer; transition: background-color 120ms ease; }
+  dialog .acts button + button { border-left: .5px solid var(--sep); color: var(--red); font-weight: 600; }
+  dialog .acts button:active { background: rgba(255, 255, 255, .08); }
+
+  /* ── Accesibilidad ── */
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: fade 200ms ease both; }
+    @keyframes fade { from { opacity: 0; } }
+    .msg, #toast, dialog { transition-property: opacity; }
+    @starting-style { .msg { transform: none; } }
+    #toast, #toast.show { transform: translate(-50%, 0); }
+    dialog, dialog[open] { transform: none; }
+    .btn:active:not(:disabled), .send:active:not(:disabled) { transform: none; }
+    .track i, .ring .val { transition-duration: 0ms; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    header { background: #121214; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #toast, dialog { background: #2c2c2e; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+  @media (prefers-contrast: more) {
+    :root { --label-2: rgba(235, 235, 245, .82); --label-3: rgba(235, 235, 245, .6); --sep: rgba(255, 255, 255, .45); }
+    .card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .35); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="avatar" id="avatar" data-state="off"><canvas id="head" width="8" height="8" aria-label="Skin de Claude"></canvas></div>
+  <div class="who-box">
+    <h1>Claude</h1>
+    <div class="sub" id="activity">Sin conexión con el bot</div>
+  </div>
+  <div class="services">
+    <div class="svc" id="svc-server" data-state="off">
+      <span class="dot"></span>
+      <div><div class="svc-name">Servidor</div><div class="svc-state" id="st-server">Apagado</div></div>
+      <button class="btn go" id="b-server" disabled>Arrancar</button>
+    </div>
+    <div class="svc" id="svc-bot" data-state="off">
+      <span class="dot"></span>
+      <div><div class="svc-name">Bot</div><div class="svc-state" id="st-bot">Apagado</div></div>
+      <button class="btn go" id="b-bot" disabled>Arrancar</button>
+    </div>
+    <div class="svc bare" id="svc-ollama" data-state="off">
+      <span class="dot"></span>
+      <div><div class="svc-name">Ollama</div><div class="svc-state" id="st-ollama">Apagado</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ff375f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      <h2>Estado</h2>
+    </div>
+    <div class="vitals">
+      <div class="ring" aria-label="Salud">
+        <svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="34"/><circle class="val" id="ringHealth" cx="42" cy="42" r="34" stroke="#ff375f"/></svg>
+        <div class="in"><b class="num" id="health">–</b><small>SALUD</small></div>
+      </div>
+      <div class="ring" aria-label="Hambre">
+        <svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="34"/><circle class="val" id="ringFood" cx="42" cy="42" r="34" stroke="#ff9f0a"/></svg>
+        <div class="in"><b class="num" id="food">–</b><small>HAMBRE</small></div>
+      </div>
+      <div class="vit-legend">
+        <div><i style="background:#ff375f"></i>Salud <span class="muted num" id="healthT">–</span></div>
+        <div><i style="background:#ff9f0a"></i>Comida <span class="muted num" id="foodT">–</span></div>
+      </div>
+    </div>
+    <div class="list">
+      <div><b>Acción</b><span id="action">–</span></div>
+      <div><b>Posición</b><span class="num" id="pos">–</span></div>
+      <div><b>Bioma</b><span id="biome">–</span></div>
+      <div><b>Hora y clima</b><span id="time">–</span></div>
+      <div><b>Cerca</b><span id="nearby">–</span></div>
+      <div><b>En la mano</b><span id="hand">–</span></div>
+    </div>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#30d158"/></svg>
+      <h2>Objetivo</h2>
+    </div>
+    <div class="goal empty" id="goal">Sin objetivo propio · espera órdenes</div>
+    <span class="badge" id="goalState"></span>
+    <h3>MODOS</h3>
+    <pre class="well" id="modes" style="max-height:9rem">–</pre>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#64d2ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+      <h2>Velocidad del cerebro</h2>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Generación</div><div class="v num" id="genTps">–</div><div class="u">tok/s</div></div>
+      <div class="stat"><div class="k">Lectura</div><div class="v num" id="promptTps">–</div><div class="u">tok/s</div></div>
+      <div class="stat"><div class="k">Respuesta</div><div class="v num" id="lat">–</div><div class="u">segundos</div></div>
+    </div>
+    <svg class="spark" id="spark" viewBox="0 0 300 76" preserveAspectRatio="none" aria-label="Historial de tok/s"></svg>
+    <div class="list">
+      <div><b>Media generación</b><span class="num" id="avgGen">–</span></div>
+      <div><b>Media lectura</b><span class="num" id="avgPrompt">–</span></div>
+      <div><b>Tokens típicos</b><span class="num" id="toks">–</span></div>
+      <div><b>Modelo</b><span id="model">–</span></div>
+    </div>
+    <div class="m4" id="m4">Aún no hay llamadas al LLM medidas.</div>
+  </section>
+
+  <section class="card c7">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
+      <h2>Pensamientos y conversación</h2>
+    </div>
+    <div class="feed" id="thoughts" aria-live="polite"><div class="empty-state">Todavía no hay pensamientos.</div></div>
+    <form class="composer" id="chat">
+      <input id="chatIn" placeholder="Escribe a Claude como en el chat…" autocomplete="off" enterkeyhint="send">
+      <button class="send" id="sendBtn" aria-label="Enviar" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+      </button>
+    </form>
+  </section>
+
+  <section class="card c5">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#bf5af2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg>
+      <h2>Consumos</h2>
+    </div>
+    <div class="meter"><div class="meter-top"><span>CPU</span><span class="num" id="cpuT">–</span></div><div class="track"><i id="cpuB" style="background:var(--blue)"></i></div></div>
+    <div class="meter"><div class="meter-top"><span>GPU</span><span class="num" id="gpuT">–</span></div><div class="track"><i id="gpuB" style="background:var(--purple)"></i></div></div>
+    <div class="meter"><div class="meter-top"><span>VRAM</span><span class="num" id="vramT">–</span></div><div class="track"><i id="vramB" style="background:var(--teal)"></i></div></div>
+    <div class="meter"><div class="meter-top"><span>RAM</span><span class="num" id="ramT">–</span></div><div class="track"><i id="ramB" style="background:var(--green)"></i></div></div>
+    <div class="procs">
+      <div class="row hd"><span>PROCESO</span><span>CPU</span><span>RAM</span></div>
+      <div id="procs"></div>
+    </div>
+    <div class="note" id="loaded"></div>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffd60a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
+      <h2>Memoria a largo plazo</h2>
+    </div>
+    <pre class="well" id="memory">–</pre>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+      <h2>Inventario</h2>
+    </div>
+    <div class="inv" id="inv"><span class="muted">–</span></div>
+    <h3>REFLEJOS RECIENTES</h3>
+    <pre class="well" id="behavior" style="max-height:9rem">–</pre>
+  </section>
+
+  <section class="card c4">
+    <div class="card-h">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <h2>Registro</h2>
+    </div>
+    <pre class="well" id="events" style="max-height:9rem"></pre>
+    <h3>SERVIDOR</h3>
+    <pre class="well" id="serverLog" style="max-height:11rem"></pre>
+  </section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="confirm">
+  <div class="body"><h4>¿Detener el servidor?</h4><p>Se guardará el mundo y se desconectará a todos los jugadores.</p></div>
+  <div class="acts"><button value="no" id="cNo">Cancelar</button><button value="yes" id="cYes">Detener</button></div>
+</dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const gb = (b) => b == null ? '–' : (b / 1073741824).toFixed(1) + ' GB';
+const pct = (v) => v == null ? '–' : Math.round(v) + '%';
+const clamp = (v) => Math.max(0, Math.min(100, v || 0));
+const bar = (id, v) => { $(id).style.transform = `scaleX(${clamp(v) / 100})`; };
+const RING = 213.6;
+const ring = (id, frac) => { $(id).style.strokeDashoffset = RING * (1 - Math.max(0, Math.min(1, frac))); };
+
+const img = new Image();
+img.onload = () => { const c = $('head').getContext('2d'); c.drawImage(img, 8, 8, 8, 8, 0, 0, 8, 8); c.drawImage(img, 40, 8, 8, 8, 0, 0, 8, 8); };
+img.src = '/skin.png';
+
+let status = {};
+
+function toast(t) {
+  const e = $('toast'); e.textContent = t; e.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => e.classList.remove('show'), 4500);
+}
+
+async function act(name) {
+  try { const r = await fetch('/api/' + name, { method: 'POST' }); toast((await r.json()).msg); }
+  catch (e) { toast('Error: ' + e.message); }
+}
+
+function confirmStop() {
+  return new Promise((resolve) => {
+    const d = $('confirm');
+    const done = (v) => { d.close(); resolve(v); };
+    $('cNo').onclick = () => done(false);
+    $('cYes').onclick = () => done(true);
+    d.oncancel = (e) => { e.preventDefault(); done(false); };
+    d.showModal(); $('cNo').focus();
+  });
+}
+
+$('b-server').onclick = async () => {
+  if (status.server === 'off') return act('server/start');
+  if (await confirmStop()) act('server/stop');
+};
+$('b-bot').onclick = () => act(status.bot === 'off' ? 'bot/start' : 'bot/stop');
+
+$('chatIn').oninput = () => { $('sendBtn').disabled = !$('chatIn').value.trim(); };
+$('chat').onsubmit = async (e) => {
+  e.preventDefault();
+  const message = $('chatIn').value.trim(); if (!message) return;
+  $('chatIn').value = ''; $('sendBtn').disabled = true;
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message }) });
+    if (!(await r.json()).ok) toast('El bot no está conectado');
+  } catch { toast('Sin conexión con el panel'); }
+};
+
+const STATE_TXT = { on: 'Encendido', starting: 'Arrancando…', off: 'Apagado' };
+function setButton(key, state) {
+  const b = $('b-' + key);
+  const acting = status.busy && status.busy.startsWith(key);
+  b.disabled = !!status.busy || state === 'starting';
+  if (acting && status.busy.endsWith('stop')) { b.textContent = 'Deteniendo…'; b.className = 'btn stop'; }
+  else if (acting || state === 'starting') { b.textContent = 'Arrancando…'; b.className = 'btn plain'; }
+  else if (state === 'off') { b.textContent = 'Arrancar'; b.className = 'btn go'; }
+  else { b.textContent = 'Detener'; b.className = 'btn stop'; }
+}
+
+function renderStatus(s) {
+  status = s || {};
+  for (const k of ['server', 'bot', 'ollama']) {
+    const v = status[k] || 'off';
+    $('svc-' + k).dataset.state = v;
+    $('st-' + k).textContent = STATE_TXT[v];
+  }
+  $('avatar').dataset.state = status.bot || 'off';
+  setButton('server', status.server || 'off');
+  setButton('bot', status.bot || 'off');
+  $('serverLog').textContent = (status.serverLog || []).join('\n') || 'Sin actividad.';
+  $('loaded').textContent = (status.models || []).length
+    ? 'En VRAM: ' + status.models.map((m) => `${m.name} (${gb(m.vram)} de ${gb(m.size)}${m.ctx ? ', ctx ' + m.ctx : ''})`).join(' · ')
+    : 'Ningún modelo cargado en VRAM.';
+  if (!status.bot || status.bot === 'off') $('activity').textContent = 'Bot apagado';
+}
+
+const GROUPS = {
+  client: ['Minecraft (tu cliente)', '#30d158'], server: ['Servidor Paper', '#0a84ff'],
+  bot: ['Bot Claude', '#d97757'], llm: ['Ollama (LLM)', '#bf5af2'], dashboard: ['Este panel', '#8e8e93'],
+};
+function renderMetrics(m) {
+  if (!m) return;
+  $('cpuT').textContent = `${pct(m.cpu)} · ${m.cores} hilos`; bar('cpuB', m.cpu);
+  $('gpuT').textContent = pct(m.gpu); bar('gpuB', m.gpu);
+  $('vramT').textContent = `${gb(m.vramUsed)} / ${gb(m.vramTotal)}`; bar('vramB', m.vramTotal ? m.vramUsed / m.vramTotal * 100 : 0);
+  $('ramT').textContent = `${gb(m.ramUsed)} / ${gb(m.ramTotal)}`; bar('ramB', m.ramUsed / m.ramTotal * 100);
+  $('procs').innerHTML = Object.keys(GROUPS).filter((k) => m.groups?.[k]).map((k) =>
+    `<div class="row"><span><i class="pdot" style="background:${GROUPS[k][1]}"></i>${GROUPS[k][0]}</span><span class="num">${m.groups[k].cpu.toFixed(1)}%</span><span class="num">${gb(m.groups[k].ram)}</span></div>`).join('')
+    || '<div class="row"><span class="muted">Nada del proyecto en marcha</span><span></span><span></span></div>';
+}
+
+const hl = (text) => esc(text).replace(/(![a-zA-Z]+(\([^)]*\))?)/g, '<code class="cmd">$1</code>');
+const WHO = { assistant: 'Claude', system: 'Sistema', user: 'Jugador' };
+let shownTurns = [];
+function renderThoughts(mind) {
+  const turns = (mind?.recentTurns || []).map((t) => ({ role: t.role, content: String(t.content ?? '') }));
+  const el = $('thoughts');
+  const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+  const bubble = (t) => `<div class="msg ${esc(t.role)}"><span class="who">${WHO[t.role] || esc(t.role)}</span>${hl(t.content)}</div>`;
+  // recentTurns es una ventana deslizante: se reutilizan las burbujas ya pintadas para que no se re-animen.
+  const key = (t) => t.role + '\u0000' + t.content;
+  let k = Math.min(shownTurns.length, turns.length);
+  while (k > 0 && !turns.slice(0, k).every((t, i) => key(t) === key(shownTurns[shownTurns.length - k + i]))) k--;
+  if (!turns.length) el.innerHTML = '<div class="empty-state">Todavía no hay pensamientos.</div>';
+  else if (k > 0 && el.querySelector('.msg')) {
+    for (let i = 0; i < shownTurns.length - k; i++) el.querySelector('.msg').remove();
+    if (turns.length > k) el.insertAdjacentHTML('beforeend', turns.slice(k).map(bubble).join(''));
+  } else el.innerHTML = turns.map(bubble).join('');
+  shownTurns = turns;
+  if (atBottom) el.scrollTop = el.scrollHeight;
+}
+
+function renderLlm(calls) {
+  const valid = (calls || []).filter((c) => c.gen_ms > 0 && c.gen_tokens > 0);
+  if (!valid.length) { $('m4').textContent = 'Aún no hay llamadas al LLM medidas (aparecen en cuanto Claude piense).'; return; }
+  const tps = (c) => c.gen_tokens / (c.gen_ms / 1000);
+  const ptps = (c) => (c.prompt_ms > 0 ? c.prompt_tokens / (c.prompt_ms / 1000) : null);
+  const last = valid[valid.length - 1];
+  const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+  const gens = valid.map(tps), prompts = valid.map(ptps).filter((x) => x);
+  const avgGen = avg(gens), avgPrompt = avg(prompts);
+  $('genTps').textContent = tps(last).toFixed(1);
+  $('promptTps').textContent = ptps(last) ? ptps(last).toFixed(0) : '–';
+  $('lat').textContent = (last.wall_ms / 1000).toFixed(1);
+  $('avgGen').textContent = `${avgGen.toFixed(1)} tok/s · ${valid.length} llamadas`;
+  $('avgPrompt').textContent = avgPrompt ? `${avgPrompt.toFixed(0)} tok/s` : '–';
+  $('toks').textContent = `${Math.round(avg(valid.map((c) => c.prompt_tokens || 0)))} → ${Math.round(avg(valid.map((c) => c.gen_tokens)))} · ${(avg(valid.map((c) => c.wall_ms)) / 1000).toFixed(1)} s`;
+  $('model').textContent = last.model;
+  // Estimacion M4: generacion limitada por ancho de banda (~120 vs ~384 GB/s), lectura por computo (~4.3 vs ~13.2 TFLOPS).
+  const g = avgGen * 120 / 384, p = avgPrompt ? avgPrompt * 4.3 / 13.2 : null;
+  const lat = avg(valid.map((c) => (c.prompt_tokens || 0) / (p || 1) + c.gen_tokens / g));
+  $('m4').innerHTML = `<b>MacBook Air M4 (estimación)</b><br>~${g.toFixed(0)} tok/s generando${p ? ` · ~${p.toFixed(0)} tok/s leyendo` : ''} · ~${lat.toFixed(1)} s por respuesta. Unas <b>${(avgGen / g).toFixed(1)}×</b> más lento que este PC.`;
+  const pts = gens.slice(-30), max = Math.max(...pts) * 1.15 || 1;
+  const xy = pts.map((v, i) => [(i / Math.max(1, pts.length - 1)) * 300, 72 - (v / max) * 66]);
+  const line = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const [lx, ly] = xy[xy.length - 1];
+  $('spark').innerHTML = `<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64d2ff" stop-opacity=".35"/><stop offset="1" stop-color="#64d2ff" stop-opacity="0"/></linearGradient></defs>`
+    + `<polygon fill="url(#sg)" points="0,76 ${line} 300,76"/>`
+    + `<polyline fill="none" stroke="#64d2ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" points="${line}"/>`
+    + `<circle cx="${lx}" cy="${ly}" r="3.5" fill="#64d2ff" stroke="#1c1c1e" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+}
+
+function renderState(st) {
+  if (!st || st.error) { $('activity').textContent = status.bot === 'starting' ? 'Arrancando…' : 'Sin conexión con el bot'; return; }
+  const g = st.gameplay, mind = st.mind || {};
+  $('activity').textContent = st.action.current;
+  $('health').textContent = g.health; $('healthT').textContent = `${g.health}/20`; ring('ringHealth', g.health / 20);
+  $('food').textContent = g.hunger; $('foodT').textContent = `${g.hunger}/20`; ring('ringFood', g.hunger / 20);
+  $('action').textContent = st.action.current;
+  $('pos').textContent = `${Math.round(g.position.x)}, ${Math.round(g.position.y)}, ${Math.round(g.position.z)} · ${g.dimension}`;
+  $('biome').textContent = g.biome;
+  $('time').textContent = `${g.timeLabel} · ${g.weather}`;
+  $('nearby').textContent = [...st.nearby.humanPlayers, ...st.nearby.botPlayers].join(', ') + (st.nearby.entityTypes.length ? ' | ' + st.nearby.entityTypes.join(', ') : '') || 'Nadie';
+  $('hand').textContent = st.inventory.equipment.mainHand || 'Nada';
+  $('goal').textContent = mind.goal || 'Sin objetivo propio · espera órdenes';
+  $('goal').classList.toggle('empty', !mind.goal);
+  $('goalState').dataset.s = mind.goalState || '';
+  $('goalState').textContent = { active: '● Persiguiendo el objetivo', paused: '❚❚ En pausa (conversando)', stopped: 'Sin auto-objetivo activo' }[mind.goalState] || '';
+  $('modes').textContent = st.modes.summary || '–';
+  $('memory').textContent = mind.memory || '(vacía)';
+  $('behavior').textContent = mind.behaviorLog || '(nada)';
+  const inv = Object.entries(st.inventory.counts || {});
+  $('inv').innerHTML = inv.length ? inv.map(([k, v]) => `<span>${esc(k.replaceAll('_', ' '))}<b class="num">×${v}</b></span>`).join('') : '<span class="muted">Vacío</span>';
+  renderThoughts(mind);
+  renderLlm(mind.llmCalls);
+}
+
+function addEvent(e) {
+  const el = $('events');
+  el.textContent = (el.textContent ? el.textContent + '\n' : '') + new Date(e.at).toLocaleTimeString() + '  ' + e.text;
+  el.scrollTop = el.scrollHeight;
+}
+
+const es = new EventSource('/events');
+es.onmessage = (ev) => {
+  const { type, data } = JSON.parse(ev.data);
+  if (type === 'init') { renderStatus(data.status); renderMetrics(data.metrics); renderState(data.state); (data.events || []).forEach(addEvent); }
+  else if (type === 'status') renderStatus(data);
+  else if (type === 'metrics') renderMetrics(data);
+  else if (type === 'state') renderState(data);
+  else if (type === 'event') addEvent(data);
+};
+es.onerror = () => { $('activity').textContent = 'Reconectando con el panel…'; };
+</script>
+</body>
+</html>

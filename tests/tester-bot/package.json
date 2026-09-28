@@ -1,0 +1,13 @@
+{
+  "name": "iamine-tester-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bot probador (sin LLM) para validar al companero por chat, segun Fase 2 del plan.",
+  "scripts": {
+    "test": "node run_tests.js"
+  },
+  "dependencies": {
+    "mineflayer": "4.33.0"
+  }
+}
