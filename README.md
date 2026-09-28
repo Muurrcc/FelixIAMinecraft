@@ -41,6 +41,7 @@ Claude joins your world as a real player. It chats, follows you, mines, crafts, 
 - 🎮 **A real player, not a mod.** The bot joins over the network with [Mindcraft](https://github.com/mindcraft-bots/mindcraft) and [Mineflayer](https://github.com/PrismarineJS/mineflayer), so it works in plain survival.
 - 💬 **Talk to it in chat.** Ask it to follow you, gather wood, craft a boat or build a house. It also gets curious and sets its own goals when idle.
 - 📊 **Apple-style live dashboard.** Health, hunger, current goal, a live chat-bubble view of its thoughts, tokens/s, and CPU/GPU/VRAM/RAM per process. It also has one-click start and stop.
+- 💭 **See it think.** Andy-4 reasons before every answer. The dashboard shows a *Thinking… 5 s* bubble while the model works, and each reply has a collapsible block with the reasoning behind it.
 - 🕹️ **Quick commands.** *Follow me*, *Come here*, *Collect wood* and *Stop* buttons run instantly, without waiting for the LLM.
 - 👥 **Several bots at once.** Up to 4 companions, each with its own name and personality (explorer, builder, quiet, funny). Switch between them in the dashboard.
 - 🔁 **Keeps itself running.** If the bot crashes or gets stuck outside the world, the dashboard restarts it and counts the restarts. World backups can run on a schedule while you play.
@@ -130,12 +131,15 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_all.ps1
 
 `start_all.ps1` opens it automatically at `http://127.0.0.1:8090`. You can also run `scripts\dashboard.ps1` on its own and start or stop the server and bot from its buttons.
 
+<p align="center"><img src="docs/reasoning.gif" width="480" alt="The Thoughts card: the player writes &quot;necesito madera&quot;, the bot thinks for a few seconds, answers in Spanish with !collectBlocks(&quot;oak_log&quot;, 16), and its reasoning opens above the reply"></p>
+<p align="center"><sub>A player asks for wood in Spanish. Claude thinks for 7 s, answers and starts chopping. Its reasoning is one click away.</sub></p>
+
 | Card | Shows |
 |---|---|
 | **Status** | Health and hunger rings, current action, position, biome, time and weather, what's nearby, held item |
 | **Goal** | The goal the bot is pursuing and its active behaviour modes |
 | **Brain speed** | Generation and prompt tokens/s, response latency, a sparkline of recent LLM calls |
-| **Thoughts** | The bot's conversation and reasoning as chat bubbles, quick-command buttons and a box to message it directly |
+| **Thoughts** | The bot's conversation as chat bubbles, a *Thinking…* bubble while the model works, the model's reasoning behind each reply, quick-command buttons and a box to message it directly |
 | **Resources** | CPU, GPU, VRAM and RAM, split by Minecraft, server, bot, Ollama and the panel itself |
 | **Memory · Inventory · Log** | Long-term memory, inventory, recent reflexes, server log |
 | **Bots** | Add or remove bots, pick each one's personality, turn auto-restart on or off, see how many times it restarted |
@@ -172,6 +176,7 @@ This repo vendors [Mindcraft](https://github.com/mindcraft-bots/mindcraft) (MIT)
 - **No more `Invalid move player packet` kicks.** The bot no longer sends `/skin clear` on join, because SkinsRestorer handles its skin.
 - **Reliable `goToPlayer`/`followPlayer`.** It waits briefly for the player's entity to appear instead of failing at once.
 - **LLM telemetry.** Tokens/s and latency for every Ollama call, shown in the dashboard.
+- **Reasoning is kept, not thrown away.** Upstream drops the model's thinking. [`ollama.js`](mindcraft/src/models/ollama.js) now saves it (Ollama's `message.thinking`, or an inline `<think>` block) along with the call in progress, so the dashboard can show both. Only the last 10 calls keep their reasoning, clipped to 2,500 characters.
 - **Safety.** `!attackPlayer` is disabled, and so is `allow_insecure_coding`, which would let the model write and run code.
 - **Several bots.** [`tools/build_profiles.js`](mindcraft/tools/build_profiles.js) turns `config/bots.json` into one profile per bot and whitelists new bots on the local server. `settings.js` reads the bots and the server address from there.
 - **Quick commands know the nearest tree.** The state sent to the dashboard includes the closest log type, so *Collect wood* asks for `birch_log` in a birch forest.

@@ -1,5 +1,5 @@
 import { strictFormat } from '../utils/text.js';
-import { recordLlmCall } from './llm_stats.js';
+import { recordLlmCall, setLlmPending } from './llm_stats.js';
 
 const ns2ms = (ns) => (typeof ns === 'number' ? ns / 1e6 : null);
 
@@ -27,13 +27,24 @@ export class Ollama {
             let res = null;
             try {
                 const t0 = Date.now();
-                let apiResponse = await this.send(this.chat_endpoint, {
-                    model: model,
-                    messages: messages,
-                    stream: false,
-                    ...(this.params || {})
-                });
+                setLlmPending(t0);
+                let apiResponse;
+                try {
+                    apiResponse = await this.send(this.chat_endpoint, {
+                        model: model,
+                        messages: messages,
+                        stream: false,
+                        ...(this.params || {})
+                    });
+                } finally {
+                    setLlmPending(null);
+                }
                 if (apiResponse) {
+                    const content = apiResponse['message']['content'] ?? '';
+                    // Reasoning models (Andy-4) think before answering: Ollama returns it in message.thinking,
+                    // older builds leave it inline as <think>...</think>. Kept for the dashboard only.
+                    const thinking = apiResponse.message.thinking
+                        || (content.match(/<think>([\s\S]*?)<\/think>/) || [])[1] || '';
                     recordLlmCall({
                         at: Date.now(),
                         model,
@@ -43,8 +54,10 @@ export class Ollama {
                         prompt_ms: ns2ms(apiResponse.prompt_eval_duration),
                         gen_tokens: apiResponse.eval_count ?? null,
                         gen_ms: ns2ms(apiResponse.eval_duration),
+                        thinking: thinking.trim(),
+                        reply: content.replace(/<think>[\s\S]*?<\/think>/g, '').trim(),
                     });
-                    res = apiResponse['message']['content'];
+                    res = content;
                 } else {
                     res = 'No response data.';
                 }

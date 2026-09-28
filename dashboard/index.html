@@ -179,6 +179,25 @@
   code.cmd { font: 600 .75rem var(--mono); color: #ffb38f; background: rgba(217, 119, 87, .14); padding: .05rem .3rem; border-radius: 5px; }
   .msg.user code.cmd { color: #fff; background: rgba(255, 255, 255, .2); }
   .empty-state { margin: auto; text-align: center; color: var(--label-3); font-size: .8125rem; }
+  .reason { margin: .1rem 0 .35rem; white-space: normal; }
+  .reason summary { cursor: pointer; font-size: .6875rem; color: var(--label-2); list-style: none; user-select: none; }
+  .reason summary::-webkit-details-marker { display: none; }
+  .reason summary::before { content: '›'; display: inline-block; width: .8em; transition: transform 160ms var(--ease-out); }
+  .reason[open] summary::before { transform: rotate(90deg); }
+  .reason > div {
+    margin-top: .3rem; padding: .45rem .6rem; border-left: 2px solid rgba(191, 90, 242, .55); border-radius: 0 8px 8px 0;
+    background: rgba(0, 0, 0, .16); color: var(--label-2); font-size: .75rem; line-height: 1.5; white-space: pre-wrap;
+    max-height: 14rem; overflow: auto; scrollbar-width: thin;
+  }
+  .typing {
+    align-self: flex-start; padding: .5rem .8rem; border-radius: 18px; border-bottom-left-radius: 6px; background: var(--surface-3);
+    font-size: .75rem; color: var(--label-2); transition: opacity 200ms var(--ease-out);
+  }
+  @starting-style { .typing { opacity: 0; } }
+  .typing .who { display: block; font-size: .625rem; font-weight: 600; letter-spacing: .02em; opacity: .7; margin-bottom: .15rem; }
+  .typing i { display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: currentColor; animation: dot 1.2s ease-in-out infinite; }
+  .typing i:nth-of-type(2) { animation-delay: .15s; } .typing i:nth-of-type(3) { animation-delay: .3s; }
+  @keyframes dot { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 
   .composer { display: flex; gap: .5rem; margin-top: .75rem; align-items: center; }
   .composer input {
@@ -320,6 +339,8 @@
     @keyframes fade { from { opacity: 0; } }
     .msg, #toast, dialog { transition-property: opacity; }
     @starting-style { .msg { transform: none; } }
+    .typing i { animation: none; opacity: .6; }
+    .reason summary::before { transition-duration: 0ms; }
     #toast, #toast.show { transform: translate(-50%, 0); }
     dialog, dialog[open] { transform: none; }
     .btn:active:not(:disabled), .send:active:not(:disabled), .chip:active:not(:disabled), .seg button:active { transform: none; }
@@ -579,7 +600,7 @@ const I18N = {
     noCalls: 'No LLM calls measured yet.', noCallsLong: 'No LLM calls measured yet (they show up as soon as Claude thinks).',
     m4: (g, p, lat, x) => `<b>MacBook Air M4 (estimate)</b><br>~${g} tok/s generating${p ? ` · ~${p} tok/s reading` : ''} · ~${lat} s per reply. About <b>${x}×</b> slower than this PC.`,
     cThoughts: 'Thoughts & conversation', noThoughts: 'No thoughts yet.', chatPh: 'Message Claude like in the game chat…', send: 'Send',
-    system: 'System', player: 'Player',
+    system: 'System', player: 'Player', thinkingNow: 'Thinking…', reasonedFor: (s, n) => `💭 Reasoned for ${s} s · ${n} tok`,
     cRes: 'Resources', process: 'Process', threads: 'threads', nothingRunning: 'Nothing from the project is running',
     groups: { client: 'Minecraft (your client)', server: 'Paper server', bot: 'Bots (Mindcraft)', dashboard: 'This dashboard' },
     inVram: 'In VRAM: ', of: 'of', noModel: 'No model loaded in VRAM.', noActivity: 'No activity.',
@@ -619,7 +640,7 @@ const I18N = {
     noCalls: 'Aún no hay llamadas al LLM medidas.', noCallsLong: 'Aún no hay llamadas al LLM medidas (aparecen en cuanto Claude piense).',
     m4: (g, p, lat, x) => `<b>MacBook Air M4 (estimación)</b><br>~${g} tok/s generando${p ? ` · ~${p} tok/s leyendo` : ''} · ~${lat} s por respuesta. Unas <b>${x}×</b> más lento que este PC.`,
     cThoughts: 'Pensamientos y conversación', noThoughts: 'Todavía no hay pensamientos.', chatPh: 'Escribe a Claude como en el chat…', send: 'Enviar',
-    system: 'Sistema', player: 'Jugador',
+    system: 'Sistema', player: 'Jugador', thinkingNow: 'Pensando…', reasonedFor: (s, n) => `💭 Razonó ${s.replace('.', ',')} s · ${n} tok`,
     cRes: 'Consumos', process: 'Proceso', threads: 'hilos', nothingRunning: 'Nada del proyecto en marcha',
     groups: { client: 'Minecraft (tu cliente)', server: 'Servidor Paper', bot: 'Bots (Mindcraft)', dashboard: 'Este panel' },
     inVram: 'En VRAM: ', of: 'de', noModel: 'Ningún modelo cargado en VRAM.', noActivity: 'Sin actividad.',
@@ -881,21 +902,49 @@ function renderMetrics(m) {
 const hl = (text) => esc(text).replace(/(![a-zA-Z]+(\([^)]*\))?)/g, '<code class="cmd">$1</code>');
 const WHO = { assistant: 'Claude', system: T.system, user: T.player };
 let shownTurns = [];
+const norm = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+// Cada respuesta del historial es el principio de lo que devolvio el modelo (se corta tras el comando):
+// se le asocia la llamada mas reciente, aun no usada, cuya respuesta empieza igual.
+function attachReasoning(turns, calls) {
+  const free = (calls || []).filter((c) => c.thinking && c.reply);
+  for (let i = turns.length - 1; i >= 0 && free.length; i--) {
+    if (turns[i].role !== 'assistant') continue;
+    const full = norm(turns[i].content), head = full.slice(0, 80);
+    let j = free.findLastIndex((c) => norm(c.reply) === full);
+    if (j < 0) j = free.findLastIndex((c) => head && norm(c.reply).startsWith(head));
+    if (j >= 0) turns[i].call = free.splice(j, 1)[0];
+  }
+}
+function reasoning(c) {
+  if (!c) return '';
+  return `<details class="reason"><summary>${T.reasonedFor((c.wall_ms / 1000).toFixed(1), c.gen_tokens ?? '–')}</summary><div>${esc(c.thinking)}</div></details>`;
+}
 function renderThoughts(mind) {
   const turns = (mind?.recentTurns || []).map((t) => ({ role: t.role, content: String(t.content ?? '') }));
+  attachReasoning(turns, mind?.llmCalls);
   const el = $('thoughts');
   const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-  const bubble = (t) => `<div class="msg ${esc(t.role)}"><span class="who">${WHO[t.role] || esc(t.role)}</span>${hl(t.content)}</div>`;
+  const bubble = (t) => `<div class="msg ${esc(t.role)}"><span class="who">${WHO[t.role] || esc(t.role)}</span>${reasoning(t.call)}${hl(t.content)}</div>`;
   // recentTurns es una ventana deslizante: se reutilizan las burbujas ya pintadas para que no se re-animen.
   const key = (t) => t.role + '\u0000' + t.content;
   let k = Math.min(shownTurns.length, turns.length);
   while (k > 0 && !turns.slice(0, k).every((t, i) => key(t) === key(shownTurns[shownTurns.length - k + i]))) k--;
+  const typing = el.querySelector('.typing');
   if (!turns.length) el.innerHTML = `<div class="empty-state">${T.noThoughts}</div>`;
   else if (k > 0 && el.querySelector('.msg')) {
     for (let i = 0; i < shownTurns.length - k; i++) el.querySelector('.msg').remove();
-    if (turns.length > k) el.insertAdjacentHTML('beforeend', turns.slice(k).map(bubble).join(''));
+    if (turns.length > k) (typing || el).insertAdjacentHTML(typing ? 'beforebegin' : 'beforeend', turns.slice(k).map(bubble).join(''));
   } else el.innerHTML = turns.map(bubble).join('');
   shownTurns = turns;
+  // Burbuja «pensando» mientras el modelo trabaja (llmPending = inicio de la llamada en curso).
+  let dots = el.querySelector('.typing');
+  if (mind?.llmPending) {
+    if (!dots) {
+      el.insertAdjacentHTML('beforeend', `<div class="typing"><span class="who">${WHO.assistant}</span><i></i><i></i><i></i> <span class="secs" aria-hidden="true"></span></div>`);
+      dots = el.querySelector('.typing');
+    }
+    dots.querySelector('.secs').textContent = `${T.thinkingNow} ${Math.max(0, Math.round((Date.now() - mind.llmPending) / 1000))} s`;
+  } else dots?.remove();
   if (atBottom) el.scrollTop = el.scrollHeight;
 }
 

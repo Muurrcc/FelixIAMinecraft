@@ -8,7 +8,7 @@ import {
     getFirstBlockAboveHead
 } from "./world.js";
 import convoManager from '../conversation.js';
-import { getLlmCalls } from '../../models/llm_stats.js';
+import { getLlmCalls, getLlmPending } from '../../models/llm_stats.js';
 
 const clip = (s, n) => (typeof s === 'string' && s.length > n ? s.slice(0, n) + '…' : s);
 
@@ -126,7 +126,8 @@ export function getFullState(agent) {
             memory: agent.history.memory || '',
             recentTurns: agent.history.turns.slice(-16).map(t => ({ role: t.role, content: clip(t.content, 1200) })),
             behaviorLog: clip(bot.modes.behavior_log || '', 1500),
-            llmCalls: getLlmCalls()
+            llmCalls: getLlmCalls(),
+            llmPending: getLlmPending()
         }
     };
 
