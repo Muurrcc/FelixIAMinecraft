@@ -16,7 +16,7 @@ jobs:
     name: Syntax and config
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: PowerShell scripts parse and are ASCII-only
         shell: powershell   # Windows PowerShell 5.1, the one users run
@@ -33,7 +33,7 @@ jobs:
           }
           if ($bad) { exit 1 }
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
 
@@ -41,8 +41,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          files=$(ls dashboard/*.mjs scripts/*.js scripts/*.mjs mindcraft/tools/*.js mindcraft/settings.js mindcraft/src/utils/mcdata.js mindcraft/src/agent/library/full_state.js .github/scripts/*.mjs 2>/dev/null)
-          for f in $files; do echo "node --check $f"; node --check "$f"; done
+          shopt -s nullglob
+          for f in dashboard/*.mjs scripts/*.js scripts/*.mjs mindcraft/tools/*.js mindcraft/settings.js mindcraft/src/utils/mcdata.js mindcraft/src/agent/library/full_state.js .github/scripts/*.mjs; do
+            echo "node --check $f"; node --check "$f"
+          done
 
       - name: JSON config is valid
         shell: bash
@@ -62,8 +64,8 @@ jobs:
     name: downloads.json hashes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
       - name: Check format and verify small downloads
