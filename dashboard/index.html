@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Claude · IAMine</title>
@@ -117,7 +117,7 @@
   .card-h { display: flex; align-items: center; gap: .5rem; margin: 0 0 .9rem; }
   .card-h svg { width: 18px; height: 18px; flex: none; }
   h2 { margin: 0; font: 600 1rem/1.2 var(--font-display); letter-spacing: -0.012em; }
-  h3 { margin: 1.1rem 0 .5rem; font-size: .75rem; font-weight: 600; color: var(--label-2); letter-spacing: .02em; }
+  h3 { margin: 1.1rem 0 .5rem; font-size: .75rem; font-weight: 600; color: var(--label-2); letter-spacing: .02em; text-transform: uppercase; }
   .muted { color: var(--label-2); }
   .note { color: var(--label-2); font-size: .75rem; margin-top: .6rem; line-height: 1.4; }
 
@@ -137,7 +137,7 @@
   .ring .val { stroke-dasharray: 213.6; stroke-dashoffset: 213.6; transition: stroke-dashoffset 700ms var(--ease-out); }
   .ring .in { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
   .ring .in b { font: 700 1.25rem/1 var(--font-display); letter-spacing: -0.02em; }
-  .ring .in small { font-size: .625rem; color: var(--label-2); letter-spacing: .02em; margin-top: 2px; }
+  .ring .in small { font-size: .625rem; color: var(--label-2); letter-spacing: .02em; margin-top: 2px; text-transform: uppercase; }
   .vit-legend { display: grid; gap: .35rem; font-size: .8125rem; }
   .vit-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: .45rem; }
 
@@ -204,7 +204,7 @@
   .procs .row { display: grid; grid-template-columns: 1fr 4.5rem 4.5rem; gap: .5rem; padding: .5rem 0; border-bottom: .5px solid var(--sep); font-size: .8125rem; }
   .procs .row:last-child { border-bottom: 0; }
   .procs .row span:not(:first-child) { text-align: right; }
-  .procs .hd { color: var(--label-3); font-size: .6875rem; padding-top: 0; }
+  .procs .hd { color: var(--label-3); font-size: .6875rem; padding-top: 0; text-transform: uppercase; }
   .pdot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: .5rem; }
 
   /* ── Texto monoespaciado ── */
@@ -271,25 +271,25 @@
 </head>
 <body>
 <header>
-  <div class="avatar" id="avatar" data-state="off"><canvas id="head" width="8" height="8" aria-label="Skin de Claude"></canvas></div>
+  <div class="avatar" id="avatar" data-state="off"><canvas id="head" width="8" height="8" aria-label="Claude's skin" data-t-aria="skinAlt"></canvas></div>
   <div class="who-box">
     <h1>Claude</h1>
-    <div class="sub" id="activity">Sin conexión con el bot</div>
+    <div class="sub" id="activity" data-t="noBot">Not connected to the bot</div>
   </div>
   <div class="services">
     <div class="svc" id="svc-server" data-state="off">
       <span class="dot"></span>
-      <div><div class="svc-name">Servidor</div><div class="svc-state" id="st-server">Apagado</div></div>
-      <button class="btn go" id="b-server" disabled>Arrancar</button>
+      <div><div class="svc-name" data-t="server">Server</div><div class="svc-state" id="st-server">Off</div></div>
+      <button class="btn go" id="b-server" disabled>Start</button>
     </div>
     <div class="svc" id="svc-bot" data-state="off">
       <span class="dot"></span>
-      <div><div class="svc-name">Bot</div><div class="svc-state" id="st-bot">Apagado</div></div>
-      <button class="btn go" id="b-bot" disabled>Arrancar</button>
+      <div><div class="svc-name">Bot</div><div class="svc-state" id="st-bot">Off</div></div>
+      <button class="btn go" id="b-bot" disabled>Start</button>
     </div>
     <div class="svc bare" id="svc-ollama" data-state="off">
       <span class="dot"></span>
-      <div><div class="svc-name">Ollama</div><div class="svc-state" id="st-ollama">Apagado</div></div>
+      <div><div class="svc-name">Ollama</div><div class="svc-state" id="st-ollama">Off</div></div>
     </div>
   </div>
 </header>
@@ -298,72 +298,72 @@
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ff375f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-      <h2>Estado</h2>
+      <h2 data-t="cStatus">Status</h2>
     </div>
     <div class="vitals">
-      <div class="ring" aria-label="Salud">
+      <div class="ring" aria-label="Health" data-t-aria="health">
         <svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="34"/><circle class="val" id="ringHealth" cx="42" cy="42" r="34" stroke="#ff375f"/></svg>
-        <div class="in"><b class="num" id="health">–</b><small>SALUD</small></div>
+        <div class="in"><b class="num" id="health">–</b><small data-t="health">Health</small></div>
       </div>
-      <div class="ring" aria-label="Hambre">
+      <div class="ring" aria-label="Hunger" data-t-aria="hunger">
         <svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="34"/><circle class="val" id="ringFood" cx="42" cy="42" r="34" stroke="#ff9f0a"/></svg>
-        <div class="in"><b class="num" id="food">–</b><small>HAMBRE</small></div>
+        <div class="in"><b class="num" id="food">–</b><small data-t="hunger">Hunger</small></div>
       </div>
       <div class="vit-legend">
-        <div><i style="background:#ff375f"></i>Salud <span class="muted num" id="healthT">–</span></div>
-        <div><i style="background:#ff9f0a"></i>Comida <span class="muted num" id="foodT">–</span></div>
+        <div><i style="background:#ff375f"></i><span data-t="health">Health</span> <span class="muted num" id="healthT">–</span></div>
+        <div><i style="background:#ff9f0a"></i><span data-t="food">Food</span> <span class="muted num" id="foodT">–</span></div>
       </div>
     </div>
     <div class="list">
-      <div><b>Acción</b><span id="action">–</span></div>
-      <div><b>Posición</b><span class="num" id="pos">–</span></div>
-      <div><b>Bioma</b><span id="biome">–</span></div>
-      <div><b>Hora y clima</b><span id="time">–</span></div>
-      <div><b>Cerca</b><span id="nearby">–</span></div>
-      <div><b>En la mano</b><span id="hand">–</span></div>
+      <div><b data-t="action">Action</b><span id="action">–</span></div>
+      <div><b data-t="position">Position</b><span class="num" id="pos">–</span></div>
+      <div><b data-t="biome">Biome</b><span id="biome">–</span></div>
+      <div><b data-t="timeWeather">Time &amp; weather</b><span id="time">–</span></div>
+      <div><b data-t="nearby">Nearby</b><span id="nearby">–</span></div>
+      <div><b data-t="inHand">In hand</b><span id="hand">–</span></div>
     </div>
   </section>
 
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="#30d158"/></svg>
-      <h2>Objetivo</h2>
+      <h2 data-t="cGoal">Goal</h2>
     </div>
-    <div class="goal empty" id="goal">Sin objetivo propio · espera órdenes</div>
+    <div class="goal empty" id="goal" data-t="noGoal">No goal of its own · waiting for orders</div>
     <span class="badge" id="goalState"></span>
-    <h3>MODOS</h3>
+    <h3 data-t="modes">Modes</h3>
     <pre class="well" id="modes" style="max-height:9rem">–</pre>
   </section>
 
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#64d2ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
-      <h2>Velocidad del cerebro</h2>
+      <h2 data-t="cBrain">Brain speed</h2>
     </div>
     <div class="stats">
-      <div class="stat"><div class="k">Generación</div><div class="v num" id="genTps">–</div><div class="u">tok/s</div></div>
-      <div class="stat"><div class="k">Lectura</div><div class="v num" id="promptTps">–</div><div class="u">tok/s</div></div>
-      <div class="stat"><div class="k">Respuesta</div><div class="v num" id="lat">–</div><div class="u">segundos</div></div>
+      <div class="stat"><div class="k" data-t="gen">Generation</div><div class="v num" id="genTps">–</div><div class="u">tok/s</div></div>
+      <div class="stat"><div class="k" data-t="prompt">Prompt</div><div class="v num" id="promptTps">–</div><div class="u">tok/s</div></div>
+      <div class="stat"><div class="k" data-t="resp">Response</div><div class="v num" id="lat">–</div><div class="u" data-t="seconds">seconds</div></div>
     </div>
-    <svg class="spark" id="spark" viewBox="0 0 300 76" preserveAspectRatio="none" aria-label="Historial de tok/s"></svg>
+    <svg class="spark" id="spark" viewBox="0 0 300 76" preserveAspectRatio="none" aria-label="tok/s history" data-t-aria="sparkAlt"></svg>
     <div class="list">
-      <div><b>Media generación</b><span class="num" id="avgGen">–</span></div>
-      <div><b>Media lectura</b><span class="num" id="avgPrompt">–</span></div>
-      <div><b>Tokens típicos</b><span class="num" id="toks">–</span></div>
-      <div><b>Modelo</b><span id="model">–</span></div>
+      <div><b data-t="avgGen">Avg generation</b><span class="num" id="avgGen">–</span></div>
+      <div><b data-t="avgPrompt">Avg prompt</b><span class="num" id="avgPrompt">–</span></div>
+      <div><b data-t="typTokens">Typical tokens</b><span class="num" id="toks">–</span></div>
+      <div><b data-t="model">Model</b><span id="model">–</span></div>
     </div>
-    <div class="m4" id="m4">Aún no hay llamadas al LLM medidas.</div>
+    <div class="m4" id="m4" data-t="noCalls">No LLM calls measured yet.</div>
   </section>
 
   <section class="card c7">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#0a84ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
-      <h2>Pensamientos y conversación</h2>
+      <h2 data-t="cThoughts">Thoughts &amp; conversation</h2>
     </div>
-    <div class="feed" id="thoughts" aria-live="polite"><div class="empty-state">Todavía no hay pensamientos.</div></div>
+    <div class="feed" id="thoughts" aria-live="polite"><div class="empty-state" data-t="noThoughts">No thoughts yet.</div></div>
     <form class="composer" id="chat">
-      <input id="chatIn" placeholder="Escribe a Claude como en el chat…" autocomplete="off" enterkeyhint="send">
-      <button class="send" id="sendBtn" aria-label="Enviar" disabled>
+      <input id="chatIn" placeholder="Message Claude like in the game chat…" data-t-ph="chatPh" autocomplete="off" enterkeyhint="send">
+      <button class="send" id="sendBtn" aria-label="Send" data-t-aria="send" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
       </button>
     </form>
@@ -372,14 +372,14 @@
   <section class="card c5">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#bf5af2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></svg>
-      <h2>Consumos</h2>
+      <h2 data-t="cRes">Resources</h2>
     </div>
     <div class="meter"><div class="meter-top"><span>CPU</span><span class="num" id="cpuT">–</span></div><div class="track"><i id="cpuB" style="background:var(--blue)"></i></div></div>
     <div class="meter"><div class="meter-top"><span>GPU</span><span class="num" id="gpuT">–</span></div><div class="track"><i id="gpuB" style="background:var(--purple)"></i></div></div>
     <div class="meter"><div class="meter-top"><span>VRAM</span><span class="num" id="vramT">–</span></div><div class="track"><i id="vramB" style="background:var(--teal)"></i></div></div>
     <div class="meter"><div class="meter-top"><span>RAM</span><span class="num" id="ramT">–</span></div><div class="track"><i id="ramB" style="background:var(--green)"></i></div></div>
     <div class="procs">
-      <div class="row hd"><span>PROCESO</span><span>CPU</span><span>RAM</span></div>
+      <div class="row hd"><span data-t="process">Process</span><span>CPU</span><span>RAM</span></div>
       <div id="procs"></div>
     </div>
     <div class="note" id="loaded"></div>
@@ -388,7 +388,7 @@
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffd60a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg>
-      <h2>Memoria a largo plazo</h2>
+      <h2 data-t="cMemory">Long-term memory</h2>
     </div>
     <pre class="well" id="memory">–</pre>
   </section>
@@ -396,32 +396,86 @@
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ff9f0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
-      <h2>Inventario</h2>
+      <h2 data-t="cInv">Inventory</h2>
     </div>
     <div class="inv" id="inv"><span class="muted">–</span></div>
-    <h3>REFLEJOS RECIENTES</h3>
+    <h3 data-t="reflexes">Recent reflexes</h3>
     <pre class="well" id="behavior" style="max-height:9rem">–</pre>
   </section>
 
   <section class="card c4">
     <div class="card-h">
       <svg viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-      <h2>Registro</h2>
+      <h2 data-t="cLog">Log</h2>
     </div>
     <pre class="well" id="events" style="max-height:9rem"></pre>
-    <h3>SERVIDOR</h3>
+    <h3 data-t="server">Server</h3>
     <pre class="well" id="serverLog" style="max-height:11rem"></pre>
   </section>
 </main>
 
 <div id="toast" role="status" aria-live="polite"></div>
 <dialog id="confirm">
-  <div class="body"><h4>¿Detener el servidor?</h4><p>Se guardará el mundo y se desconectará a todos los jugadores.</p></div>
-  <div class="acts"><button value="no" id="cNo">Cancelar</button><button value="yes" id="cYes">Detener</button></div>
+  <div class="body"><h4 data-t="stopQ">Stop the server?</h4><p data-t="stopBody">The world will be saved and all players will be disconnected.</p></div>
+  <div class="acts"><button value="no" id="cNo" data-t="cancel">Cancel</button><button value="yes" id="cYes" data-t="stop">Stop</button></div>
 </dialog>
 
 <script>
 const $ = (id) => document.getElementById(id);
+
+// Textos de la interfaz. El servidor pone <html lang> segun config/language.json; ingles por defecto.
+const I18N = {
+  en: {
+    skinAlt: "Claude's skin", noBot: 'Not connected to the bot', botOff: 'Bot is off', reconnecting: 'Reconnecting to the dashboard…',
+    server: 'Server', state: { on: 'On', starting: 'Starting…', off: 'Off' },
+    start: 'Start', stop: 'Stop', starting: 'Starting…', stopping: 'Stopping…', cancel: 'Cancel',
+    stopQ: 'Stop the server?', stopBody: 'The world will be saved and all players will be disconnected.',
+    botNotConnected: "The bot isn't connected", noPanel: "Can't reach the dashboard",
+    cStatus: 'Status', health: 'Health', hunger: 'Hunger', food: 'Food',
+    action: 'Action', position: 'Position', biome: 'Biome', timeWeather: 'Time & weather', nearby: 'Nearby', inHand: 'In hand',
+    nobody: 'Nobody', nothing: 'Nothing',
+    cGoal: 'Goal', noGoal: 'No goal of its own · waiting for orders', modes: 'Modes',
+    goalState: { active: '● Pursuing the goal', paused: '❚❚ Paused (talking)', stopped: 'No auto-goal active' },
+    cBrain: 'Brain speed', gen: 'Generation', prompt: 'Prompt', resp: 'Response', seconds: 'seconds', sparkAlt: 'tok/s history',
+    avgGen: 'Avg generation', avgPrompt: 'Avg prompt', typTokens: 'Typical tokens', model: 'Model', calls: 'calls',
+    noCalls: 'No LLM calls measured yet.', noCallsLong: 'No LLM calls measured yet (they show up as soon as Claude thinks).',
+    m4: (g, p, lat, x) => `<b>MacBook Air M4 (estimate)</b><br>~${g} tok/s generating${p ? ` · ~${p} tok/s reading` : ''} · ~${lat} s per reply. About <b>${x}×</b> slower than this PC.`,
+    cThoughts: 'Thoughts & conversation', noThoughts: 'No thoughts yet.', chatPh: 'Message Claude like in the game chat…', send: 'Send',
+    system: 'System', player: 'Player',
+    cRes: 'Resources', process: 'Process', threads: 'threads', nothingRunning: 'Nothing from the project is running',
+    groups: { client: 'Minecraft (your client)', server: 'Paper server', bot: 'Claude bot', dashboard: 'This dashboard' },
+    inVram: 'In VRAM: ', of: 'of', noModel: 'No model loaded in VRAM.', noActivity: 'No activity.',
+    cMemory: 'Long-term memory', emptyMemory: '(empty)', cInv: 'Inventory', emptyInv: 'Empty', reflexes: 'Recent reflexes', noneParen: '(nothing)',
+    cLog: 'Log',
+  },
+  es: {
+    skinAlt: 'Skin de Claude', noBot: 'Sin conexión con el bot', botOff: 'Bot apagado', reconnecting: 'Reconectando con el panel…',
+    server: 'Servidor', state: { on: 'Encendido', starting: 'Arrancando…', off: 'Apagado' },
+    start: 'Arrancar', stop: 'Detener', starting: 'Arrancando…', stopping: 'Deteniendo…', cancel: 'Cancelar',
+    stopQ: '¿Detener el servidor?', stopBody: 'Se guardará el mundo y se desconectará a todos los jugadores.',
+    botNotConnected: 'El bot no está conectado', noPanel: 'Sin conexión con el panel',
+    cStatus: 'Estado', health: 'Salud', hunger: 'Hambre', food: 'Comida',
+    action: 'Acción', position: 'Posición', biome: 'Bioma', timeWeather: 'Hora y clima', nearby: 'Cerca', inHand: 'En la mano',
+    nobody: 'Nadie', nothing: 'Nada',
+    cGoal: 'Objetivo', noGoal: 'Sin objetivo propio · espera órdenes', modes: 'Modos',
+    goalState: { active: '● Persiguiendo el objetivo', paused: '❚❚ En pausa (conversando)', stopped: 'Sin auto-objetivo activo' },
+    cBrain: 'Velocidad del cerebro', gen: 'Generación', prompt: 'Lectura', resp: 'Respuesta', seconds: 'segundos', sparkAlt: 'Historial de tok/s',
+    avgGen: 'Media generación', avgPrompt: 'Media lectura', typTokens: 'Tokens típicos', model: 'Modelo', calls: 'llamadas',
+    noCalls: 'Aún no hay llamadas al LLM medidas.', noCallsLong: 'Aún no hay llamadas al LLM medidas (aparecen en cuanto Claude piense).',
+    m4: (g, p, lat, x) => `<b>MacBook Air M4 (estimación)</b><br>~${g} tok/s generando${p ? ` · ~${p} tok/s leyendo` : ''} · ~${lat} s por respuesta. Unas <b>${x}×</b> más lento que este PC.`,
+    cThoughts: 'Pensamientos y conversación', noThoughts: 'Todavía no hay pensamientos.', chatPh: 'Escribe a Claude como en el chat…', send: 'Enviar',
+    system: 'Sistema', player: 'Jugador',
+    cRes: 'Consumos', process: 'Proceso', threads: 'hilos', nothingRunning: 'Nada del proyecto en marcha',
+    groups: { client: 'Minecraft (tu cliente)', server: 'Servidor Paper', bot: 'Bot Claude', dashboard: 'Este panel' },
+    inVram: 'En VRAM: ', of: 'de', noModel: 'Ningún modelo cargado en VRAM.', noActivity: 'Sin actividad.',
+    cMemory: 'Memoria a largo plazo', emptyMemory: '(vacía)', cInv: 'Inventario', emptyInv: 'Vacío', reflexes: 'Reflejos recientes', noneParen: '(nada)',
+    cLog: 'Registro',
+  },
+};
+const T = I18N[document.documentElement.lang] || I18N.en;
+document.querySelectorAll('[data-t]').forEach((e) => { e.textContent = T[e.dataset.t]; });
+document.querySelectorAll('[data-t-aria]').forEach((e) => { e.setAttribute('aria-label', T[e.dataset.tAria]); });
+document.querySelectorAll('[data-t-ph]').forEach((e) => { e.placeholder = T[e.dataset.tPh]; });
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const gb = (b) => b == null ? '–' : (b / 1073741824).toFixed(1) + ' GB';
 const pct = (v) => v == null ? '–' : Math.round(v) + '%';
@@ -470,19 +524,18 @@ $('chat').onsubmit = async (e) => {
   $('chatIn').value = ''; $('sendBtn').disabled = true;
   try {
     const r = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message }) });
-    if (!(await r.json()).ok) toast('El bot no está conectado');
-  } catch { toast('Sin conexión con el panel'); }
+    if (!(await r.json()).ok) toast(T.botNotConnected);
+  } catch { toast(T.noPanel); }
 };
 
-const STATE_TXT = { on: 'Encendido', starting: 'Arrancando…', off: 'Apagado' };
 function setButton(key, state) {
   const b = $('b-' + key);
   const acting = status.busy && status.busy.startsWith(key);
   b.disabled = !!status.busy || state === 'starting';
-  if (acting && status.busy.endsWith('stop')) { b.textContent = 'Deteniendo…'; b.className = 'btn stop'; }
-  else if (acting || state === 'starting') { b.textContent = 'Arrancando…'; b.className = 'btn plain'; }
-  else if (state === 'off') { b.textContent = 'Arrancar'; b.className = 'btn go'; }
-  else { b.textContent = 'Detener'; b.className = 'btn stop'; }
+  if (acting && status.busy.endsWith('stop')) { b.textContent = T.stopping; b.className = 'btn stop'; }
+  else if (acting || state === 'starting') { b.textContent = T.starting; b.className = 'btn plain'; }
+  else if (state === 'off') { b.textContent = T.start; b.className = 'btn go'; }
+  else { b.textContent = T.stop; b.className = 'btn stop'; }
 }
 
 function renderStatus(s) {
@@ -490,35 +543,35 @@ function renderStatus(s) {
   for (const k of ['server', 'bot', 'ollama']) {
     const v = status[k] || 'off';
     $('svc-' + k).dataset.state = v;
-    $('st-' + k).textContent = STATE_TXT[v];
+    $('st-' + k).textContent = T.state[v];
   }
   $('avatar').dataset.state = status.bot || 'off';
   setButton('server', status.server || 'off');
   setButton('bot', status.bot || 'off');
-  $('serverLog').textContent = (status.serverLog || []).join('\n') || 'Sin actividad.';
+  $('serverLog').textContent = (status.serverLog || []).join('\n') || T.noActivity;
   $('loaded').textContent = (status.models || []).length
-    ? 'En VRAM: ' + status.models.map((m) => `${m.name} (${gb(m.vram)} de ${gb(m.size)}${m.ctx ? ', ctx ' + m.ctx : ''})`).join(' · ')
-    : 'Ningún modelo cargado en VRAM.';
-  if (!status.bot || status.bot === 'off') $('activity').textContent = 'Bot apagado';
+    ? T.inVram + status.models.map((m) => `${m.name} (${gb(m.vram)} ${T.of} ${gb(m.size)}${m.ctx ? ', ctx ' + m.ctx : ''})`).join(' · ')
+    : T.noModel;
+  if (!status.bot || status.bot === 'off') $('activity').textContent = T.botOff;
 }
 
 const GROUPS = {
-  client: ['Minecraft (tu cliente)', '#30d158'], server: ['Servidor Paper', '#0a84ff'],
-  bot: ['Bot Claude', '#d97757'], llm: ['Ollama (LLM)', '#bf5af2'], dashboard: ['Este panel', '#8e8e93'],
+  client: [T.groups.client, '#30d158'], server: [T.groups.server, '#0a84ff'],
+  bot: [T.groups.bot, '#d97757'], llm: ['Ollama (LLM)', '#bf5af2'], dashboard: [T.groups.dashboard, '#8e8e93'],
 };
 function renderMetrics(m) {
   if (!m) return;
-  $('cpuT').textContent = `${pct(m.cpu)} · ${m.cores} hilos`; bar('cpuB', m.cpu);
+  $('cpuT').textContent = `${pct(m.cpu)} · ${m.cores} ${T.threads}`; bar('cpuB', m.cpu);
   $('gpuT').textContent = pct(m.gpu); bar('gpuB', m.gpu);
   $('vramT').textContent = `${gb(m.vramUsed)} / ${gb(m.vramTotal)}`; bar('vramB', m.vramTotal ? m.vramUsed / m.vramTotal * 100 : 0);
   $('ramT').textContent = `${gb(m.ramUsed)} / ${gb(m.ramTotal)}`; bar('ramB', m.ramUsed / m.ramTotal * 100);
   $('procs').innerHTML = Object.keys(GROUPS).filter((k) => m.groups?.[k]).map((k) =>
     `<div class="row"><span><i class="pdot" style="background:${GROUPS[k][1]}"></i>${GROUPS[k][0]}</span><span class="num">${m.groups[k].cpu.toFixed(1)}%</span><span class="num">${gb(m.groups[k].ram)}</span></div>`).join('')
-    || '<div class="row"><span class="muted">Nada del proyecto en marcha</span><span></span><span></span></div>';
+    || `<div class="row"><span class="muted">${T.nothingRunning}</span><span></span><span></span></div>`;
 }
 
 const hl = (text) => esc(text).replace(/(![a-zA-Z]+(\([^)]*\))?)/g, '<code class="cmd">$1</code>');
-const WHO = { assistant: 'Claude', system: 'Sistema', user: 'Jugador' };
+const WHO = { assistant: 'Claude', system: T.system, user: T.player };
 let shownTurns = [];
 function renderThoughts(mind) {
   const turns = (mind?.recentTurns || []).map((t) => ({ role: t.role, content: String(t.content ?? '') }));
@@ -529,7 +582,7 @@ function renderThoughts(mind) {
   const key = (t) => t.role + '\u0000' + t.content;
   let k = Math.min(shownTurns.length, turns.length);
   while (k > 0 && !turns.slice(0, k).every((t, i) => key(t) === key(shownTurns[shownTurns.length - k + i]))) k--;
-  if (!turns.length) el.innerHTML = '<div class="empty-state">Todavía no hay pensamientos.</div>';
+  if (!turns.length) el.innerHTML = `<div class="empty-state">${T.noThoughts}</div>`;
   else if (k > 0 && el.querySelector('.msg')) {
     for (let i = 0; i < shownTurns.length - k; i++) el.querySelector('.msg').remove();
     if (turns.length > k) el.insertAdjacentHTML('beforeend', turns.slice(k).map(bubble).join(''));
@@ -540,7 +593,7 @@ function renderThoughts(mind) {
 
 function renderLlm(calls) {
   const valid = (calls || []).filter((c) => c.gen_ms > 0 && c.gen_tokens > 0);
-  if (!valid.length) { $('m4').textContent = 'Aún no hay llamadas al LLM medidas (aparecen en cuanto Claude piense).'; return; }
+  if (!valid.length) { $('m4').textContent = T.noCallsLong; return; }
   const tps = (c) => c.gen_tokens / (c.gen_ms / 1000);
   const ptps = (c) => (c.prompt_ms > 0 ? c.prompt_tokens / (c.prompt_ms / 1000) : null);
   const last = valid[valid.length - 1];
@@ -550,14 +603,14 @@ function renderLlm(calls) {
   $('genTps').textContent = tps(last).toFixed(1);
   $('promptTps').textContent = ptps(last) ? ptps(last).toFixed(0) : '–';
   $('lat').textContent = (last.wall_ms / 1000).toFixed(1);
-  $('avgGen').textContent = `${avgGen.toFixed(1)} tok/s · ${valid.length} llamadas`;
+  $('avgGen').textContent = `${avgGen.toFixed(1)} tok/s · ${valid.length} ${T.calls}`;
   $('avgPrompt').textContent = avgPrompt ? `${avgPrompt.toFixed(0)} tok/s` : '–';
   $('toks').textContent = `${Math.round(avg(valid.map((c) => c.prompt_tokens || 0)))} → ${Math.round(avg(valid.map((c) => c.gen_tokens)))} · ${(avg(valid.map((c) => c.wall_ms)) / 1000).toFixed(1)} s`;
   $('model').textContent = last.model;
   // Estimacion M4: generacion limitada por ancho de banda (~120 vs ~384 GB/s), lectura por computo (~4.3 vs ~13.2 TFLOPS).
   const g = avgGen * 120 / 384, p = avgPrompt ? avgPrompt * 4.3 / 13.2 : null;
   const lat = avg(valid.map((c) => (c.prompt_tokens || 0) / (p || 1) + c.gen_tokens / g));
-  $('m4').innerHTML = `<b>MacBook Air M4 (estimación)</b><br>~${g.toFixed(0)} tok/s generando${p ? ` · ~${p.toFixed(0)} tok/s leyendo` : ''} · ~${lat.toFixed(1)} s por respuesta. Unas <b>${(avgGen / g).toFixed(1)}×</b> más lento que este PC.`;
+  $('m4').innerHTML = T.m4(g.toFixed(0), p && p.toFixed(0), lat.toFixed(1), (avgGen / g).toFixed(1));
   const pts = gens.slice(-30), max = Math.max(...pts) * 1.15 || 1;
   const xy = pts.map((v, i) => [(i / Math.max(1, pts.length - 1)) * 300, 72 - (v / max) * 66]);
   const line = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
@@ -569,7 +622,7 @@ function renderLlm(calls) {
 }
 
 function renderState(st) {
-  if (!st || st.error) { $('activity').textContent = status.bot === 'starting' ? 'Arrancando…' : 'Sin conexión con el bot'; return; }
+  if (!st || st.error) { $('activity').textContent = status.bot === 'starting' ? T.starting : T.noBot; return; }
   const g = st.gameplay, mind = st.mind || {};
   $('activity').textContent = st.action.current;
   $('health').textContent = g.health; $('healthT').textContent = `${g.health}/20`; ring('ringHealth', g.health / 20);
@@ -578,17 +631,17 @@ function renderState(st) {
   $('pos').textContent = `${Math.round(g.position.x)}, ${Math.round(g.position.y)}, ${Math.round(g.position.z)} · ${g.dimension}`;
   $('biome').textContent = g.biome;
   $('time').textContent = `${g.timeLabel} · ${g.weather}`;
-  $('nearby').textContent = [...st.nearby.humanPlayers, ...st.nearby.botPlayers].join(', ') + (st.nearby.entityTypes.length ? ' | ' + st.nearby.entityTypes.join(', ') : '') || 'Nadie';
-  $('hand').textContent = st.inventory.equipment.mainHand || 'Nada';
-  $('goal').textContent = mind.goal || 'Sin objetivo propio · espera órdenes';
+  $('nearby').textContent = [...st.nearby.humanPlayers, ...st.nearby.botPlayers].join(', ') + (st.nearby.entityTypes.length ? ' | ' + st.nearby.entityTypes.join(', ') : '') || T.nobody;
+  $('hand').textContent = st.inventory.equipment.mainHand || T.nothing;
+  $('goal').textContent = mind.goal || T.noGoal;
   $('goal').classList.toggle('empty', !mind.goal);
   $('goalState').dataset.s = mind.goalState || '';
-  $('goalState').textContent = { active: '● Persiguiendo el objetivo', paused: '❚❚ En pausa (conversando)', stopped: 'Sin auto-objetivo activo' }[mind.goalState] || '';
+  $('goalState').textContent = T.goalState[mind.goalState] || '';
   $('modes').textContent = st.modes.summary || '–';
-  $('memory').textContent = mind.memory || '(vacía)';
-  $('behavior').textContent = mind.behaviorLog || '(nada)';
+  $('memory').textContent = mind.memory || T.emptyMemory;
+  $('behavior').textContent = mind.behaviorLog || T.noneParen;
   const inv = Object.entries(st.inventory.counts || {});
-  $('inv').innerHTML = inv.length ? inv.map(([k, v]) => `<span>${esc(k.replaceAll('_', ' '))}<b class="num">×${v}</b></span>`).join('') : '<span class="muted">Vacío</span>';
+  $('inv').innerHTML = inv.length ? inv.map(([k, v]) => `<span>${esc(k.replaceAll('_', ' '))}<b class="num">×${v}</b></span>`).join('') : `<span class="muted">${T.emptyInv}</span>`;
   renderThoughts(mind);
   renderLlm(mind.llmCalls);
 }
@@ -608,7 +661,7 @@ es.onmessage = (ev) => {
   else if (type === 'state') renderState(data);
   else if (type === 'event') addEvent(data);
 };
-es.onerror = () => { $('activity').textContent = 'Reconectando con el panel…'; };
+es.onerror = () => { $('activity').textContent = T.reconnecting; };
 </script>
 </body>
 </html>

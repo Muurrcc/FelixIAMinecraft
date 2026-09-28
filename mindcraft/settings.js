@@ -1,3 +1,13 @@
+import fs from 'fs';
+
+// Chat language comes from config/language.json (shared with the dashboard); English if missing.
+const LANGUAGE_NAMES = { en: "English", es: "Spanish" };
+let language = "English";
+try {
+    const code = JSON.parse(fs.readFileSync(new URL('../config/language.json', import.meta.url), 'utf8')).language;
+    if (code) language = LANGUAGE_NAMES[String(code).toLowerCase()] || code;
+} catch { }
+
 const settings = {
     "minecraft_version": "1.21.6", // fijado (verificado en NOTAS.md, no "auto", para que coincida con el servidor Paper)
     "host": process.env.MINDCRAFT_HOST || "127.0.0.1", // servidor Paper local, solo localhost
@@ -14,14 +24,14 @@ const settings = {
     ],
 
     "load_memory": true, // cargar memoria de sesiones anteriores (persistencia, fase 3)
-    "init_message": "Responde con hola mundo y tu nombre", // sends to all on spawn
+    "init_message": "Say hello and your name", // sends to all on spawn
     "only_chat_with": [], // publico: responde a quien lo mencione o le susurre (logica de mencion en el propio prompt/companion)
 
     "speak": false,
     // SIN VOZ: el compañero solo se comunica por el chat de Minecraft (regla del plan). No activar TTS/STT.
 
     "chat_ingame": true, // bot responses are shown in minecraft chat
-    "language": "Spanish", // traduce entradas/salidas del chat a espanol; los prompts internos y el tool-calling siguen en ingles (mejor fiabilidad con Andy-4, ver NOTAS.md)
+    "language": language, // set in config/language.json; chat is translated to/from it, internal prompts and tool-calling stay in English (more reliable with Andy-4)
     "render_bot_view": false, // show bot's view in browser at localhost:3000, 3001...
 
     "allow_insecure_coding": false, // allows newAction command and model can write/run code on your computer. enable at own risk

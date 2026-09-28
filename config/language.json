@@ -1,0 +1,4 @@
+{
+  "_comment": "Language for the bot's in-game chat and the dashboard. \"en\" or \"es\" switch both; any other language name (e.g. \"French\") works for the bot's chat via Google Translate, and the dashboard falls back to English. Restart the bot and the dashboard after changing it.",
+  "language": "en"
+}

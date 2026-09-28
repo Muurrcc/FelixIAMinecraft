@@ -21,6 +21,68 @@ const BOT_NAME = 'Claude';
 const NODE = `${R}\\runtime\\node\\node.exe`;
 const JAVA = `${R}\\runtime\\java\\bin\\java.exe`;
 
+// Idioma del panel desde config/language.json (el mismo que usa el bot); ingles si falta o no esta traducido.
+const LANG = (() => {
+    try { return String(JSON.parse(fs.readFileSync(`${R}\\config\\language.json`, 'utf8')).language).toLowerCase().startsWith('es') ? 'es' : 'en'; }
+    catch { return 'en'; }
+})();
+const MSG = {
+    en: {
+        mindConnected: 'Connected to the bot MindServer',
+        serverAlreadyOn: 'The server is already running',
+        serverAlreadyStarting: 'The server is already starting',
+        serverStarting: (pid) => `Server starting (PID ${pid})...`,
+        serverReady: 'Server ready',
+        serverDied: 'The server closed while starting; check logs\\server_main_stdout.log',
+        serverSlow: 'The server did not finish starting within 180 s',
+        serverAlreadyOff: 'The server was already stopped',
+        serverStopping: 'Saving the world and stopping the server (RCON stop)...',
+        serverStopped: 'Server stopped',
+        serverKilled: 'Server force-closed (it did not respond to stop)',
+        rconFailed: (out) => `RCON failed: ${out}`,
+        ollamaStarting: (pid) => `Ollama starting (PID ${pid})...`,
+        ollamaSlow: 'Ollama did not respond within 20 s',
+        botAlreadyOn: 'The bot is already running',
+        botNoServer: 'Warning: the server is not running; the bot will retry when connecting',
+        llmConfigFailed: (out) => `apply_llm_config failed: ${out}`,
+        botStarting: (pid) => `Bot starting (PID ${pid})...`,
+        botJoined: 'Claude joined the world',
+        botDied: 'The bot closed while starting; check logs\\bot_stderr.log',
+        botSlow: 'The bot is still starting (taking more than 60 s)',
+        botAlreadyOff: 'The bot was already stopped',
+        botStopped: 'Bot stopped and model unloaded from VRAM',
+        busy: (what) => `Wait: ${what} in progress`,
+        listening: (port) => `Dashboard at http://127.0.0.1:${port}`,
+    },
+    es: {
+        mindConnected: 'Conectado al MindServer del bot',
+        serverAlreadyOn: 'El servidor ya esta encendido',
+        serverAlreadyStarting: 'El servidor ya se esta arrancando',
+        serverStarting: (pid) => `Servidor arrancando (PID ${pid})...`,
+        serverReady: 'Servidor listo',
+        serverDied: 'El servidor se ha cerrado al arrancar; mira logs\\server_main_stdout.log',
+        serverSlow: 'El servidor no termino de arrancar en 180 s',
+        serverAlreadyOff: 'El servidor ya estaba apagado',
+        serverStopping: 'Guardando mundo y parando servidor (RCON stop)...',
+        serverStopped: 'Servidor parado',
+        serverKilled: 'Servidor forzado a cerrar (no respondio a stop)',
+        rconFailed: (out) => `RCON fallo: ${out}`,
+        ollamaStarting: (pid) => `Ollama arrancando (PID ${pid})...`,
+        ollamaSlow: 'Ollama no respondio en 20 s',
+        botAlreadyOn: 'El bot ya esta en marcha',
+        botNoServer: 'Aviso: el servidor no esta encendido; el bot reintentara al conectar',
+        llmConfigFailed: (out) => `apply_llm_config fallo: ${out}`,
+        botStarting: (pid) => `Bot arrancando (PID ${pid})...`,
+        botJoined: 'Claude ha entrado al mundo',
+        botDied: 'El bot se ha cerrado al arrancar; mira logs\\bot_stderr.log',
+        botSlow: 'El bot sigue arrancando (tarda mas de 60 s)',
+        botAlreadyOff: 'El bot ya estaba parado',
+        botStopped: 'Bot parado y modelo descargado de la VRAM',
+        busy: (what) => `Espera: ${what} en curso`,
+        listening: (port) => `Dashboard en http://127.0.0.1:${port}`,
+    },
+}[LANG];
+
 // socket.io-client ya viene con Mindcraft: no se instala nada nuevo.
 const { io } = createRequire(`${R}\\mindcraft\\package.json`)('socket.io-client');
 
@@ -123,7 +185,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ---------- conexion con el mindserver del bot ----------
 const mind = io(MINDSERVER, { reconnection: true, reconnectionDelay: 1500, reconnectionDelayMax: 3000, timeout: 2000 });
-mind.on('connect', () => { mind.emit('listen-to-agents'); logEvent('Conectado al MindServer del bot'); });
+mind.on('connect', () => { mind.emit('listen-to-agents'); logEvent(MSG.mindConnected); });
 mind.on('disconnect', () => { S.agentState = null; S.agents = []; broadcast('state', null); });
 mind.on('agents-status', (agents) => { S.agents = agents; });
 mind.on('state-update', (states) => {
@@ -211,57 +273,57 @@ setInterval(refreshStatus, 2000);
 
 // ---------- acciones ----------
 async function serverStart() {
-    if (await portOpen(SERVER_PORT)) return 'El servidor ya esta encendido';
-    if (isAlive(readPids().server_main)) return 'El servidor ya se esta arrancando';
+    if (await portOpen(SERVER_PORT)) return MSG.serverAlreadyOn;
+    if (isAlive(readPids().server_main)) return MSG.serverAlreadyStarting;
     const pid = spawnDetached(JAVA, ['-Xms2G', '-Xmx6G', '-jar', 'paper-1.21.6-48.jar', '--nogui'], `${R}\\server\\main`, 'server_main');
     writePids({ server_main: pid });
-    logEvent(`Servidor arrancando (PID ${pid})...`);
+    logEvent(MSG.serverStarting(pid));
     for (let i = 0; i < 90; i++) {
         await sleep(2000);
-        if (tail(`${R}\\logs\\server_main_stdout.log`, 40).some((l) => l.includes('Done ('))) return 'Servidor listo';
-        if (!isAlive(pid)) return 'El servidor se ha cerrado al arrancar; mira logs\\server_main_stdout.log';
+        if (tail(`${R}\\logs\\server_main_stdout.log`, 40).some((l) => l.includes('Done ('))) return MSG.serverReady;
+        if (!isAlive(pid)) return MSG.serverDied;
     }
-    return 'El servidor no termino de arrancar en 180 s';
+    return MSG.serverSlow;
 }
 async function serverStop() {
     const pid = readPids().server_main;
-    if (!(await portOpen(SERVER_PORT)) && !isAlive(pid)) return 'El servidor ya estaba apagado';
-    logEvent('Guardando mundo y parando servidor (RCON stop)...');
+    if (!(await portOpen(SERVER_PORT)) && !isAlive(pid)) return MSG.serverAlreadyOff;
+    logEvent(MSG.serverStopping);
     const r = await rcon('stop');
     for (let i = 0; i < 30; i++) {
         await sleep(1000);
-        if (!isAlive(pid) && !(await portOpen(SERVER_PORT))) { writePids({ server_main: null }); return 'Servidor parado'; }
+        if (!isAlive(pid) && !(await portOpen(SERVER_PORT))) { writePids({ server_main: null }); return MSG.serverStopped; }
     }
-    if (isAlive(pid)) { await run('taskkill', ['/PID', String(pid), '/T', '/F']); writePids({ server_main: null }); return 'Servidor forzado a cerrar (no respondio a stop)'; }
-    return r.ok ? 'Servidor parado' : `RCON fallo: ${r.out.trim()}`;
+    if (isAlive(pid)) { await run('taskkill', ['/PID', String(pid), '/T', '/F']); writePids({ server_main: null }); return MSG.serverKilled; }
+    return r.ok ? MSG.serverStopped : MSG.rconFailed(r.out.trim());
 }
 async function ensureOllama() {
     if (await portOpen(11434)) return;
     const pid = spawnDetached(`${R}\\runtime\\ollama\\ollama.exe`, ['serve'], `${R}`, 'ollama');
     writePids({ ollama: pid });
-    logEvent(`Ollama arrancando (PID ${pid})...`);
+    logEvent(MSG.ollamaStarting(pid));
     for (let i = 0; i < 20; i++) { await sleep(1000); if (await portOpen(11434)) return; }
-    throw new Error('Ollama no respondio en 20 s');
+    throw new Error(MSG.ollamaSlow);
 }
 async function botStart() {
-    if (mind.connected || isAlive(readPids().bot)) return 'El bot ya esta en marcha';
-    if (!(await portOpen(SERVER_PORT))) logEvent('Aviso: el servidor no esta encendido; el bot reintentara al conectar');
+    if (mind.connected || isAlive(readPids().bot)) return MSG.botAlreadyOn;
+    if (!(await portOpen(SERVER_PORT))) logEvent(MSG.botNoServer);
     await ensureOllama();
     const cfg = await run(NODE, [`${R}\\mindcraft\\tools\\apply_llm_config.js`, `${R}\\mindcraft\\profiles\\claude_bot.json`], { env: childEnv });
-    if (!cfg.ok) return `apply_llm_config fallo: ${cfg.out.trim()}`;
+    if (!cfg.ok) return MSG.llmConfigFailed(cfg.out.trim());
     const pid = spawnDetached(NODE, ['main.js'], `${R}\\mindcraft`, 'bot', { MINDCRAFT_PORT: String(SERVER_PORT) });
     writePids({ bot: pid });
-    logEvent(`Bot arrancando (PID ${pid})...`);
+    logEvent(MSG.botStarting(pid));
     for (let i = 0; i < 60; i++) {
         await sleep(1000);
-        if (S.agents.find((a) => a.name === BOT_NAME)?.in_game) return 'Claude ha entrado al mundo';
-        if (!isAlive(pid)) return 'El bot se ha cerrado al arrancar; mira logs\\bot_stderr.log';
+        if (S.agents.find((a) => a.name === BOT_NAME)?.in_game) return MSG.botJoined;
+        if (!isAlive(pid)) return MSG.botDied;
     }
-    return 'El bot sigue arrancando (tarda mas de 60 s)';
+    return MSG.botSlow;
 }
 async function botStop() {
     const pid = readPids().bot;
-    if (!mind.connected && !isAlive(pid)) return 'El bot ya estaba parado';
+    if (!mind.connected && !isAlive(pid)) return MSG.botAlreadyOff;
     if (mind.connected) mind.emit('shutdown');
     for (let i = 0; i < 8 && isAlive(pid); i++) await sleep(1000);
     if (isAlive(pid)) await run('taskkill', ['/PID', String(pid), '/T', '/F']);
@@ -271,7 +333,7 @@ async function botStop() {
     for (const m of ps?.models || []) {
         await fetchJson(`${OLLAMA}/api/generate`, { method: 'POST', body: JSON.stringify({ model: m.name, keep_alive: 0 }) }, 5000);
     }
-    return 'Bot parado y modelo descargado de la VRAM';
+    return MSG.botStopped;
 }
 const actions = {
     'server/start': serverStart, 'server/stop': serverStop,
@@ -285,6 +347,7 @@ http.createServer(async (req, res) => {
     if (req.method === 'GET' && STATIC[url.pathname]) {
         const [f, type] = STATIC[url.pathname];
         res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
+        if (f === 'index.html') return res.end(fs.readFileSync(path.join(HERE, f), 'utf8').replace('<html lang="en">', `<html lang="${LANG}">`));
         return fs.createReadStream(path.join(HERE, f)).pipe(res);
     }
     if (req.method === 'GET' && url.pathname === '/events') {
@@ -313,7 +376,7 @@ http.createServer(async (req, res) => {
         }
         const fn = actions[name];
         if (!fn) { res.writeHead(404); return res.end(); }
-        if (busy) { res.writeHead(409, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ msg: `Espera: ${busy} en curso` })); }
+        if (busy) { res.writeHead(409, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ msg: MSG.busy(busy) })); }
         busy = name;
         refreshStatus();
         let msg;
@@ -325,7 +388,7 @@ http.createServer(async (req, res) => {
         return res.end(JSON.stringify({ msg }));
     }
     res.writeHead(404); res.end();
-}).listen(PORT, '127.0.0.1', () => console.log(`Dashboard en http://127.0.0.1:${PORT}`));
+}).listen(PORT, '127.0.0.1', () => console.log(MSG.listening(PORT)));
 
 startMetrics();
 refreshStatus();

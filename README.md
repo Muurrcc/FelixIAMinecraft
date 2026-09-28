@@ -107,8 +107,6 @@ craft a boat and meet me at the river
 stop
 ```
 
-The bot answers in Spanish by default. To change that, see [Configuration](#configuration).
-
 To stop everything cleanly (saves the world and frees the VRAM):
 
 ```powershell
@@ -128,10 +126,7 @@ powershell -ExecutionPolicy Bypass -File scripts\stop_all.ps1
 | **Resources** | CPU, GPU, VRAM and RAM, split by Minecraft, server, bot, Ollama and the panel itself |
 | **Memory · Inventory · Log** | Long-term memory, inventory, recent reflexes, server log |
 
-The dashboard follows Apple's Human Interface ideas on the web: a translucent sticky header, press feedback, and animations that only use transform and opacity. It respects `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast`, and it adapts down to phone width. It's a single HTML file with no build step and no dependencies.
-
-> [!NOTE]
-> The dashboard's labels are in Spanish for now. An English UI is on the [roadmap](#roadmap).
+The dashboard follows Apple's Human Interface ideas on the web: a translucent sticky header, press feedback, and animations that only use transform and opacity. It respects `prefers-reduced-motion`, `prefers-reduced-transparency` and `prefers-contrast`, and it adapts down to phone width. It's a single HTML file with no build step and no dependencies, available in English and Spanish (see [Configuration](#configuration)).
 
 ## How it works
 
@@ -167,11 +162,12 @@ This repo vendors [Mindcraft](https://github.com/mindcraft-bots/mindcraft) (MIT)
 | File | Purpose |
 |---|---|
 | [`config/llm.json`](config/llm.json) | **Where the LLM runs and which model it uses.** It's applied to the bot profile on every start. |
-| [`mindcraft/settings.js`](mindcraft/settings.js) | Bot behaviour: the chat `language`, blocked actions and chat settings. |
+| [`config/language.json`](config/language.json) | **Language of the bot's chat and the dashboard.** Default `"en"`. |
+| [`mindcraft/settings.js`](mindcraft/settings.js) | Bot behaviour: blocked actions, memory and chat settings. |
 | [`mindcraft/profiles/claude_bot.json`](mindcraft/profiles/claude_bot.json) | The bot's name, personality and prompts. |
 | `server/main/server.properties` | Generated from [`server-template/`](server-template) on install: view distance, difficulty and similar settings. |
 
-**Make the bot speak English.** Set `"language": "English"` in `mindcraft/settings.js` (the default is `"Spanish"`) and restart the bot. The internal prompts are already in English.
+**Change the language.** Set `"language"` in `config/language.json` to `"es"` for Spanish, then restart the bot and the dashboard. Both use English by default. Any other language name (for example `"French"`) also works for the bot's chat, which is translated with Google Translate, and the dashboard stays in English. The bot's internal prompts are always in English, which keeps Andy-4 reliable.
 
 **Use a different model.** Change `chat_model` in `config/llm.json` (for example `ollama/sweaterdog/andy-4:q5_k_m`), pull it with `runtime\ollama\ollama.exe pull <model>`, then restart the bot.
 
@@ -184,7 +180,7 @@ FelixIAMinecraft/
 ├── scripts/            install, start/stop/status, backup, Prism deploy, RCON client, LLM benchmark
 ├── dashboard/          the live web panel (server.mjs + a single index.html)
 ├── mindcraft/          vendored Mindcraft with the fixes above
-├── config/llm.json     single source of truth for the LLM
+├── config/             llm.json (which LLM, where) and language.json (bot + dashboard language)
 ├── server-template/    server.properties / spigot.yml templates (passwords filled in at install)
 ├── client/IAMine/      Prism Launcher instance template (mods are downloaded by the installer)
 └── tests/tester-bot/   scripted bot that checks the companion over chat (no LLM)
@@ -254,7 +250,7 @@ Run `scripts\stop_all.ps1` and delete the folder. If you used `-DeployPrism`, al
 - [x] Portable, hash-verified one-command installer
 - [x] Live dashboard with per-process resource usage
 - [x] Automatic bot skin
-- [ ] English dashboard UI and English as the default bot language
+- [x] English dashboard UI and English as the default bot language (Spanish available)
 - [ ] Linux and macOS scripts
 - [ ] Several bots at once, each with its own card
 
